@@ -26,7 +26,7 @@ exports.sendData = function(port, options, data, res, callBackOK, callbackError)
     var xhr, body, result;
 
     callbackError = callbackError || function(status, resp) {
-        console.log("Error: ", status, resp);
+        //console.log("Error: ", status, resp);
         res.statusCode = status;
         res.send(resp);
     };
@@ -36,8 +36,8 @@ exports.sendData = function(port, options, data, res, callBackOK, callbackError)
             var header = headers[idx];
             res.setHeader(idx, headers[idx]);
         }
-        console.log("Response: ", status);
-        console.log(" Body: ", resp);
+        //console.log("Response: ", status);
+        //console.log(" Body: ", resp);
         res.send(resp);
     };
 
@@ -85,7 +85,7 @@ exports.sendData = function(port, options, data, res, callBackOK, callbackError)
     };
 
     var flag = false;
-    console.log("Sending ", options.method, " to: " + url);
+    //console.log("Sending ", options.method, " to: " + url);
     //console.log(" Headers: ", options.headers);
     //console.log(" Body: ", data);
     if (data !== undefined) {
