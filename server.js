@@ -1,8 +1,6 @@
 var express = require('express'),
     clientAPI = express(),
     adminAPI = express(),
-    http = require('http'),
-    https = require('https'),
     proxy = require('./HTTPClient.js');
 
 var hostname = '130.206.80.62';
@@ -133,6 +131,7 @@ var getUserData = function (access_token, callback, callbackError) {
 
         var resp1 = JSON.parse(resp);
 
+        // fake
         resp1.organizations = [
             {
                id: '6571e3422ad84f7d828ce2f30373b3d4',
@@ -248,8 +247,14 @@ var createToken = function (port) {
                 }
 
                 
-            }, function (e) {
-                console.log('[USER AUTH] Error in IDM communication', e);
+            }, function (status, e) {
+                if (status === 401) {
+                    console.log('[VALIDATION] User token not authorized');
+                    res.send(404, 'User token not authorized');
+                } else {
+                    console.log('[VALIDATION] Error in IDM communication ', e);
+                    res.send(503, 'Error in IDM communication');
+                }
             });
            
         }
@@ -273,6 +278,7 @@ adminAPI.post('/v2.0/tokens', createToken(adminPort));
 
 clientAPI.post('/v2.0/tokens', createToken(clientPort));
 
+// Token validation from keystone-middlewares
 adminAPI.get('/v2.0/tokens/:token', function(req, res) {
     // Validate token
     console.log('[VALIDATION] Validate user token', req.params.token, 'with auth token ', req.headers['x-auth-token']);
@@ -311,14 +317,53 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
                 }
 
 
-            }, function (e) {
-                console.log('[VALIDATION] Error in IDM communication ', e);
+            }, function (status, e) {
+                if (status === 401) {
+                    console.log('[VALIDATION] User token not authorized');
+                    res.send(404, 'User token not authorized');
+                } else {
+                    console.log('[VALIDATION] Error in IDM communication ', e);
+                    res.send(503, 'Error in IDM communication');
+                }
+                
             });
             
         } else {
             console.log('[VALIDATION] User token not found');
             res.send(404, 'User token not found');
         }
+    } else {
+        console.log('[VALIDATION] Service unauthorized');
+        res.send(401, 'Service not authorized');
+    }
+    
+});
+
+// Token validation from PEP proxies (access-tokens)
+adminAPI.get('/v2.0/access-tokens/:token', function(req, res) {
+    // Validate token
+    console.log('[VALIDATION] Validate user access-token', req.params.token, 'with auth token ', req.headers['x-auth-token']);
+
+    if (authDataBase[req.headers['x-auth-token']]) {
+        console.log('[VALIDATION] Authorization OK from PEP proxy ', authDataBase[req.headers['x-auth-token']].access_token);
+
+        getUserData(req.params.token, function (status, resp) {
+
+            console.log('[VALIDATION] User access-token OK');
+
+            res.send(JSON.stringify(resp));
+          
+        }, function (status, e) {
+            if (status === 401) {
+                console.log('[VALIDATION] User token not authorized');
+                res.send(404, 'User token not authorized');
+            } else {
+                console.log('[VALIDATION] Error in IDM communication ', e);
+                res.send(503, 'Error in IDM communication');
+            }
+        });
+            
+
     } else {
         console.log('[VALIDATION] Service unauthorized');
         res.send(401, 'Service not authorized');
@@ -333,12 +378,12 @@ clientAPI.get('/v2.0/tokens/:token', function(req, res) {
 });
 
 clientAPI.all('*', function(req, res) {
-   console.log("////////////////////////Creating token in clientAPI");
+   console.log("////////////////////////Lost request in clientAPI");
 
 });
 
 adminAPI.all('*', function(req, res) {
-    console.log("////////////////////////Creating token in clientAPI");
+    console.log("///////////////////////Lost request in adminAPI");
 
 });
 
