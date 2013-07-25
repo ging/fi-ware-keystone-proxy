@@ -1,7 +1,8 @@
 var express = require('express'),
     clientAPI = express(),
     adminAPI = express(),
-    proxy = require('./HTTPClient.js');
+    proxy = require('./HTTPClient.js'),
+    xmlParser = require('./xml2json');
 
 var hostname = '130.206.80.62';
 var clientPort = 5000;
@@ -310,7 +311,13 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
                     delete access.access['serviceCatalog'];
                     console.log('[VALIDATION] User token OK');
 
-                    res.send(JSON.stringify(access));
+                    var userInfo = JSON.stringify(access);
+
+                    if (req.headers['accept'] === 'application/xml') {
+                        userInfo = xmlParser.json2xml_str(access);
+                    }
+
+                    res.send(userInfo);
                 } else {
                     console.log('[VALIDATION] User token not authorized');
                     res.send(404, 'User token not authorized');
@@ -351,7 +358,13 @@ adminAPI.get('/v2.0/access-tokens/:token', function(req, res) {
 
             console.log('[VALIDATION] User access-token OK');
 
-            res.send(JSON.stringify(resp));
+            var userInfo = JSON.stringify(resp);
+
+            if (req.headers['accept'] === 'application/xml') {
+                userInfo = xmlParser.json2xml_str(resp);
+            }
+
+            res.send(userInfo);
           
         }, function (status, e) {
             if (status === 401) {
