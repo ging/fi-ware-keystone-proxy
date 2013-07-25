@@ -326,6 +326,7 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
 
             }, function (status, e) {
                 if (status === 401) {
+                    delete authDataBase[req.params.token];
                     console.log('[VALIDATION] User token not authorized');
                     res.send(404, 'User token not authorized');
                 } else {
