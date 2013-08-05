@@ -116,6 +116,17 @@ var generateToken = function () {
     return require('crypto').randomBytes(16).toString('hex');
 }
 
+var pad = function(number, length) {
+   
+    var str = '' + number;
+    while (str.length < length) {
+        str = '0' + str;
+    }
+   
+    return str;
+
+}
+
 var getUserData = function (access_token, callback, callbackError) {
 
     // Llamar al IDM
@@ -132,7 +143,11 @@ var getUserData = function (access_token, callback, callbackError) {
 
         var resp1 = JSON.parse(resp);
 
-        // fake
+        for (var orgIdx in resp1.organizations) {
+            var org = resp1.organizations[orgIdx];
+            org.id = pad(org.id, 32);
+        }
+/*
         resp1.organizations = [
             {
                id: '6571e3422ad84f7d828ce2f30373b3d4',
@@ -150,7 +165,7 @@ var getUserData = function (access_token, callback, callbackError) {
                     ]
             }
         ];
-
+*/
         callback(status, resp1);
 
     }, callbackError);
@@ -237,6 +252,7 @@ var createToken = function (port) {
                         authDataBase[token] = {access_token: body.auth.token.id, tenant: body.auth.tenantId};
                         console.log('[USER AUTH] Generating new token for user', body.auth.token.id, 'and tenant ', body.auth.tenantId, 'token: ', token);
                     } 
+                    //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
 
                     var ten = {description: "Tenant from IDM", enabled: true, id: myTenant.id, name: myTenant.name}
                     var access = generateAccessResponse(token, ten, resp.nickName, resp.displayName, myTenant.roles);
@@ -305,6 +321,7 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
                 }
 
                 if (myTenant) {
+                    //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
                     var ten = {description: "Tenant from IDM", enabled: true, id: myTenant.id, name: myTenant.name}
                     var access = generateAccessResponse(req.params.token, ten, resp.nickName, resp.displayName, myTenant.roles);
                         
@@ -312,11 +329,14 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
                     console.log('[VALIDATION] User token OK');
 
                     var userInfo = JSON.stringify(access);
-
+                    res.setHeader("Content-Type", "application/json");
                     if (req.headers['accept'] === 'application/xml') {
                         userInfo = xmlParser.json2xml_str(access);
+                        res.setHeader("Content-Type", "application/xml");
                     }
 
+                    console.log("[VALIDATION] User info: ", userInfo);
+		    
                     res.send(userInfo);
                 } else {
                     console.log('[VALIDATION] User token not authorized');
@@ -364,7 +384,7 @@ adminAPI.get('/v2.0/access-tokens/:token', function(req, res) {
             if (req.headers['accept'] === 'application/xml') {
                 userInfo = xmlParser.json2xml_str(resp);
             }
-
+            console.log("Response: ", userInfo);
             res.send(userInfo);
           
         }, function (status, e) {
