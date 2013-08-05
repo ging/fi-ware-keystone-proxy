@@ -147,6 +147,22 @@ var getUserData = function (access_token, callback, callbackError) {
             var org = resp1.organizations[orgIdx];
             org.id = pad(org.id, 32);
         }
+
+        var myOrg = {
+               id: pad(resp1.actorId, 32),
+               name: resp1.nickName,
+               roles: [
+                        {"id": "8db87ccbca3b4d1ba4814c3bb0d63aab", "name": "Member"}, 
+                        {"id": "09e95db0ea3f4495a64e95bfc64b0c55", "name": "admin"}
+                    ]
+            };
+
+        if (resp1.organizations === undefined) {
+            resp1.organizations = [];
+        };
+
+        resp1.organizations.push(myOrg);
+
 /*
         resp1.organizations = [
             {
