@@ -4,11 +4,6 @@ var express = require('express'),
     proxy = require('./HTTPClient.js'),
     xmlParser = require('./xml2json');
 
-var hostname = '130.206.80.62';
-var clientPort = 5000;
-var adminPort = 35357;
-var fakeToken = "46b97bc848e947f9b444f9ccf3a4762a";
-
 var idmHostName = 'idm.lab.fi-ware.eu';
 
 //{token: {access_token: (service_name), tenant: }}
@@ -188,7 +183,7 @@ var getUserData = function (access_token, callback, callbackError) {
 
 }
 
-var createToken = function (port) {
+var createToken = function () {
     return function(req, res) {
         console.log("[AUTHENTICATION]", req.body);
         var body = JSON.parse(req.body);
@@ -307,9 +302,9 @@ adminAPI.use(function(req,res,next) {
     next();
 });
 
-adminAPI.post('/v2.0/tokens', createToken(adminPort));
+adminAPI.post('/v2.0/tokens', createToken());
 
-clientAPI.post('/v2.0/tokens', createToken(clientPort));
+clientAPI.post('/v2.0/tokens', createToken());
 
 // Token validation from keystone-middlewares
 adminAPI.get('/v2.0/tokens/:token', function(req, res) {
