@@ -232,6 +232,28 @@ var createToken = function () {
             var userInfo = JSON.stringify(resp);
             res.setHeader("Content-Type", "application/json");
             if (req.headers['accept'] === 'application/xml') {
+
+                resp = 
+                    {"access": 
+                        {"token": 
+                            {"_expires": "2015-07-09T15:16:07Z", 
+                            "_id": token, 
+                            "tenant": 
+                                {"description": "Service tenant", "_enabled": true, "_id": "96d9611e4b514c2a9804376a899103f1", "_name": "service"}
+                            }, 
+                            "user": {
+                                "username": body.auth.passwordCredentials.username, 
+                                "roles_links": [], 
+                                "id": "91c72f314d93470b90a7c1ba21d7e352", 
+                                "roles": [
+                                    {"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"}, 
+                                    {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}
+                                ], 
+                                "name": body.auth.passwordCredentials.username}
+                            }
+                        };
+
+
                 userInfo = xmlParser.json2xml_str(resp);
                 res.setHeader("Content-Type", "application/xml");
             }
