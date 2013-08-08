@@ -228,7 +228,14 @@ var createToken = function () {
                         }
                     };
             authDataBase[token] = {access_token: body.auth.passwordCredentials.username, tenant: '96d9611e4b514c2a9804376a899103f1'};
-            res.send(resp);
+
+            res.setHeader("Content-Type", "application/json");
+            if (req.headers['accept'] === 'application/xml') {
+                userInfo = xmlParser.json2xml_str(resp);
+                res.setHeader("Content-Type", "application/xml");
+            }
+
+            res.send(userInfo);
         } else {
             
             console.log('[USER AUTH] Checking token for user', body.auth.token.id, 'and tenant ', body.auth.tenantId);
