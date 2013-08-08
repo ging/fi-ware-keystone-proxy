@@ -229,6 +229,7 @@ var createToken = function () {
                     };
             authDataBase[token] = {access_token: body.auth.passwordCredentials.username, tenant: '96d9611e4b514c2a9804376a899103f1'};
 
+            var userInfo = JSON.stringify(resp);
             res.setHeader("Content-Type", "application/json");
             if (req.headers['accept'] === 'application/xml') {
                 userInfo = xmlParser.json2xml_str(resp);
