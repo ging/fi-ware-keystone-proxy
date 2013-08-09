@@ -109,6 +109,12 @@ var generateAccessResponse = function (token, tenant, user_id, user_name, roles)
 
 var generateAccessResponseForXML = function (token, tenant, user_id, user_name, roles) {
 
+    var newRoles = [];
+    for (var r in roles) {
+        var nr = {"_name": roles[r].name, "_id": roles[r].id};
+        newRoles.push(nr);
+    }
+
     return {"access": 
             {
             "_xmlns" : "http://docs.openstack.org/identity/api/v2.0",
@@ -119,11 +125,11 @@ var generateAccessResponseForXML = function (token, tenant, user_id, user_name, 
             }, 
             "serviceCatalog": getCatalogue(tenant.id),
             "user": {
-                "username": user_id, 
+                "_username": user_id, 
                 "roles_links": [], 
-                "id": user_id, 
-                "roles": roles, 
-                "name": user_name
+                "_id": user_id, 
+                "roles": newRoles, 
+                "_name": user_name
             }
         }
     };
