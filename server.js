@@ -111,6 +111,7 @@ var generateAccessResponseForXML = function (token, tenant, user_id, user_name, 
 
     return {"access": 
             {
+            "_xmlns" : "http://docs.openstack.org/identity/api/v2.0",
             "token": 
             {"_expires": "2015-07-09T15:16:07Z", 
             "_id": token, 
