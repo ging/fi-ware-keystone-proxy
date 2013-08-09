@@ -213,7 +213,7 @@ var createToken = function () {
                         {"expires": "2015-07-09T15:16:07Z", 
                         "id": token, 
                         "tenant": 
-                            {"description": "Service tenant", "enabled": true, "id": "96d9611e4b514c2a9804376a899103f1", "name": "service"}
+                            {"description": "Service tenant", "enabled": true, "name": "service", "id": "96d9611e4b514c2a9804376a899103f1"}
                         }, 
                         "serviceCatalog": getCatalogue('96d9611e4b514c2a9804376a899103f1'), 
                         "user": {
