@@ -239,7 +239,7 @@ var createToken = function () {
                             {"_expires": "2015-07-09T15:16:07Z", 
                             "_id": token, 
                             "tenant": 
-                                {"description": "Service tenant", "_enabled": true, "_name": "service", "_id": "96d9611e4b514c2a9804376a899103f1"}
+                                {"_enabled": true, "_name": "service", "_id": "96d9611e4b514c2a9804376a899103f1"}
                             }, 
                             "user": {
                                 "username": body.auth.passwordCredentials.username, 
