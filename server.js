@@ -107,6 +107,27 @@ var generateAccessResponse = function (token, tenant, user_id, user_name, roles)
     };
 }
 
+var generateAccessResponseForXML = function (token, tenant, user_id, user_name, roles) {
+
+    return {"access": 
+            {
+            "token": 
+            {"_expires": "2015-07-09T15:16:07Z", 
+            "_id": token, 
+            "tenant": tenant
+            }, 
+            "serviceCatalog": getCatalogue(tenant.id),
+            "user": {
+                "username": user_id, 
+                "roles_links": [], 
+                "id": user_id, 
+                "roles": roles, 
+                "name": user_name
+            }
+        }
+    };
+}
+
 var generateToken = function () {
     return require('crypto').randomBytes(16).toString('hex');
 }
@@ -363,7 +384,7 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
 
                 if (myTenant) {
                     //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
-                    var ten = {description: "Tenant from IDM", enabled: true, id: myTenant.id, name: myTenant.name}
+                    var ten = {description: "Tenant from IDM", enabled: true, id: myTenant.id, name: myTenant.name};
                     var access = generateAccessResponse(req.params.token, ten, resp.nickName, resp.displayName, myTenant.roles);
                         
                     delete access.access['serviceCatalog'];
@@ -372,6 +393,10 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
                     var userInfo = JSON.stringify(access);
                     res.setHeader("Content-Type", "application/json");
                     if (req.headers['accept'] === 'application/xml') {
+                        ten = {"_enabled": true, "_id": myTenant.id, "_name": myTenant.name};
+                        access = generateAccessResponseForXML(req.params.token, ten, resp.nickName, resp.displayName, myTenant.roles);
+                        delete access.access['serviceCatalog'];
+
                         userInfo = xmlParser.json2xml_str(access);
                         res.setHeader("Content-Type", "application/xml");
                     }
