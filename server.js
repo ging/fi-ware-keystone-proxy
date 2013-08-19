@@ -328,7 +328,7 @@ var createToken = function () {
 
                     if (!token) {
                         token = generateToken();
-                        authDataBase[token] = {access_token: body.auth.token.id, tenant: body.auth.tenantId, isAdmin = false};
+                        authDataBase[token] = {access_token: body.auth.token.id, tenant: body.auth.tenantId, isAdmin: false};
                         console.log('[TOKEN AUTH] Generating new token for user', body.auth.token.id, 'and tenant ', body.auth.tenantId, 'token: ', token);
                     } 
                     //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
