@@ -328,7 +328,7 @@ var createToken = function () {
 
                     if (!token) {
                         token = generateToken();
-                        authDataBase[token] = {access_token: body.auth.token.id, tenant: body.auth.tenantId};
+                        authDataBase[token] = {access_token: body.auth.token.id, tenant: body.auth.tenantId, isAdmin = false};
                         console.log('[TOKEN AUTH] Generating new token for user', body.auth.token.id, 'and tenant ', body.auth.tenantId, 'token: ', token);
                     } 
                     //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
@@ -386,7 +386,6 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
 
         if (authDataBase[req.params.token].isAdmin) {
 
-            authDataBase[token] = {access_token: body.auth.passwordCredentials.username, tenant: tenantId, isAdmin: isAdmin};
             var roles = [
                 {"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"}, 
                 {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}
