@@ -392,13 +392,13 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
                 {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}
             ];
             var tenant = {"description": "tenant", "enabled": true, "name": "tenant " + authDataBase[token].tenant, "id": authDataBase[token].tenant};
-            var access = generateAccessResponse(token, tenant, authDataBase[token].username, authDataBase[token].username, roles);
+            var access = generateAccessResponse(token, tenant, authDataBase[token].access_token, authDataBase[token].access_token, roles);
             delete access.access['serviceCatalog'];
             var userInfo = JSON.stringify(access);
             res.setHeader("Content-Type", "application/json");
             if (req.headers['accept'] === 'application/xml') {
                 ten = {"_enabled": true, "_id": myTenant.id, "_name": myTenant.name};
-                access = generateAccessResponseForXML(token, {id: authDataBase[token].tenant}, authDataBase[token].access_token, authDataBase[token].access_token, roles);
+                access = generateAccessResponseForXML(token, tenant, authDataBase[token].access_token, authDataBase[token].access_token, roles);
                 delete access.access['serviceCatalog'];
 
                 userInfo = xmlParser.json2xml_str(access);
