@@ -251,7 +251,7 @@ var createToken = function () {
                         "tenant": 
                             {"description": "Service tenant", "enabled": true, "name": "service", "id": tenantId}
                         }, 
-                        "serviceCatalog": getCatalogue('96d9611e4b514c2a9804376a899103f1'), 
+                        "serviceCatalog": getCatalogue(tenantId), 
                         "user": {
                             "username": body.auth.passwordCredentials.username, 
                             "roles_links": [], 
