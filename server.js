@@ -237,10 +237,12 @@ var createToken = function () {
                 console.log('[CREDENTIALS AUTH] Generating new token for service', body.auth.passwordCredentials.username, 'token: ', token);
             } 
 
-            // This case the user 
+            // This case the user is admin
+            var isAdmin = false;
             
             if (body.auth.tenantName !== undefined && body.auth.passwordCredentials.username == "admin" && body.auth.passwordCredentials.password == "openstack") {
                 tenantId = body.auth.tenantName;
+                isAdmin = true;
             }
 
             var resp = 
@@ -263,7 +265,7 @@ var createToken = function () {
                             "name": body.auth.passwordCredentials.username}
                         }
                     };
-            authDataBase[token] = {access_token: body.auth.passwordCredentials.username, tenant: tenantId};
+            authDataBase[token] = {access_token: body.auth.passwordCredentials.username, tenant: tenantId, isAdmin: isAdmin};
 
             var userInfo = JSON.stringify(resp);
             res.setHeader("Content-Type", "application/json");
@@ -382,7 +384,31 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
     
         var success = false;
 
-        if(authDataBase[req.params.token]) {
+        if (authDataBase[req.params.token].isAdmin) {
+
+            authDataBase[token] = {access_token: body.auth.passwordCredentials.username, tenant: tenantId, isAdmin: isAdmin};
+            var roles = [
+                {"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"}, 
+                {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}
+            ];
+            var access = generateAccessResponse(token, authDataBase[token].tenantId, authDataBase[token].username, authDataBase[token].username, roles);
+            delete access.access['serviceCatalog'];
+            var userInfo = JSON.stringify(access);
+            res.setHeader("Content-Type", "application/json");
+            if (req.headers['accept'] === 'application/xml') {
+                ten = {"_enabled": true, "_id": myTenant.id, "_name": myTenant.name};
+                access = generateAccessResponseForXML(token, authDataBase[token].tenantId, authDataBase[token].username, authDataBase[token].username, roles);
+                delete access.access['serviceCatalog'];
+
+                userInfo = xmlParser.json2xml_str(access);
+                res.setHeader("Content-Type", "application/xml");
+            }
+
+            console.log("[VALIDATION] User info: ", userInfo);
+    
+            res.send(userInfo);
+
+        } else if(authDataBase[req.params.token]) {
 
             getUserData(authDataBase[req.params.token].access_token, function (status, resp) {
 
