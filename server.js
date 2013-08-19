@@ -218,30 +218,38 @@ var createToken = function () {
         //console.log(JSON.stringify(body, 4, 4));
         if (body.auth.passwordCredentials !== undefined) {
 
-            console.log('[SERVICE AUTH] Checking token for service', body.auth.passwordCredentials.username);
+            console.log('[CREDENTIALS AUTH] Checking token for user', body.auth.passwordCredentials.username);
 
             var token = undefined;
+
+            var tenantId = '96d9611e4b514c2a9804376a899103f1';
 
             for (var t in authDataBase) {
                 if (authDataBase[t].access_token === body.auth.passwordCredentials.username) {
                     token = t;
-                    console.log('[SERVICE AUTH] Getting existing token for service', body.auth.passwordCredentials.username, 'token: ', token);
+                    console.log('[CREDENTIALS AUTH] Getting existing token for service', body.auth.passwordCredentials.username, 'token: ', token);
                     break;
                 }
             }
 
             if (!token) {
                 token = generateToken();
-                console.log('[SERVICE AUTH] Generating new token for service', body.auth.passwordCredentials.username, 'token: ', token);
+                console.log('[CREDENTIALS AUTH] Generating new token for service', body.auth.passwordCredentials.username, 'token: ', token);
             } 
+
+            // This case the user 
             
+            if (body.auth.tenantName !== undefined && body.auth.passwordCredentials.username == "admin" && body.auth.passwordCredentials.password == "openstack") {
+                tenantId = body.auth.tenantName;
+            }
+
             var resp = 
                 {"access": 
                     {"token": 
                         {"expires": "2015-07-09T15:16:07Z", 
                         "id": token, 
                         "tenant": 
-                            {"description": "Service tenant", "enabled": true, "name": "service", "id": "96d9611e4b514c2a9804376a899103f1"}
+                            {"description": "Service tenant", "enabled": true, "name": "service", "id": tenantId}
                         }, 
                         "serviceCatalog": getCatalogue('96d9611e4b514c2a9804376a899103f1'), 
                         "user": {
@@ -255,7 +263,7 @@ var createToken = function () {
                             "name": body.auth.passwordCredentials.username}
                         }
                     };
-            authDataBase[token] = {access_token: body.auth.passwordCredentials.username, tenant: '96d9611e4b514c2a9804376a899103f1'};
+            authDataBase[token] = {access_token: body.auth.passwordCredentials.username, tenant: tenantId};
 
             var userInfo = JSON.stringify(resp);
             res.setHeader("Content-Type", "application/json");
@@ -267,7 +275,7 @@ var createToken = function () {
                             {"_expires": "2015-07-09T15:16:07Z", 
                             "_id": token, 
                             "tenant": 
-                                {"_enabled": true, "_name": "service", "_id": "96d9611e4b514c2a9804376a899103f1"}
+                                {"_enabled": true, "_name": "service", "_id": tenantId}
                             }, 
                             "user": {
                                 "username": body.auth.passwordCredentials.username, 
@@ -289,7 +297,7 @@ var createToken = function () {
             res.send(userInfo);
         } else {
             
-            console.log('[USER AUTH] Checking token for user', body.auth.token.id, 'and tenant ', body.auth.tenantId);
+            console.log('[TOKEN AUTH] Checking token for user', body.auth.token.id, 'and tenant ', body.auth.tenantId);
 
             getUserData(body.auth.token.id, function (status, resp) {
 
@@ -311,7 +319,7 @@ var createToken = function () {
                     for (var t in authDataBase) {
                         if (authDataBase[t].access_token === body.auth.token.id && authDataBase[t].tenant === body.auth.tenantId) {
                             token = t;
-                            console.log('[USER AUTH] Getting existing token user', body.auth.token.id, 'and tenant ', body.auth.tenantId, 'token: ', token);
+                            console.log('[TOKEN AUTH] Getting existing token user', body.auth.token.id, 'and tenant ', body.auth.tenantId, 'token: ', token);
                             break;
                         }
                     }
@@ -319,7 +327,7 @@ var createToken = function () {
                     if (!token) {
                         token = generateToken();
                         authDataBase[token] = {access_token: body.auth.token.id, tenant: body.auth.tenantId};
-                        console.log('[USER AUTH] Generating new token for user', body.auth.token.id, 'and tenant ', body.auth.tenantId, 'token: ', token);
+                        console.log('[TOKEN AUTH] Generating new token for user', body.auth.token.id, 'and tenant ', body.auth.tenantId, 'token: ', token);
                     } 
                     //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
 
@@ -328,7 +336,7 @@ var createToken = function () {
 
                     res.send(JSON.stringify(access));
                 } else {
-                    console.log('[USER AUTH] Authentication error for ', body.auth.token.id, 'and tenant ', body.auth.tenantId);
+                    console.log('[TOKEN AUTH] Authentication error for ', body.auth.token.id, 'and tenant ', body.auth.tenantId);
                     res.send(401, 'User unathorized for this tenant');
                 }
 
