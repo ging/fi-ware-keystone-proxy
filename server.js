@@ -384,7 +384,7 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
 
         var success = false;
 
-        if (authDataBase[req.params.token].isAdmin) {
+        if (authDataBase[req.params.token] && authDataBase[req.params.token].isAdmin) {
             var token = req.params.token;
 
             var roles = [
