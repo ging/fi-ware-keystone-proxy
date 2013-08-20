@@ -12,7 +12,7 @@ var authDataBase = {};
 var parseBody = function(req, res, next) {
     var data='';
     req.setEncoding('utf8');
-    req.on('data', function(chunk) { 
+    req.on('data', function(chunk) {
        data += chunk;
     });
 
@@ -24,83 +24,83 @@ var parseBody = function(req, res, next) {
 };
 
 var serviceCatalog = [
-    {"endpoints": 
+    {"endpoints":
         [
-        {"adminURL": "http://130.206.80.62:8774/v2/$(tenant_id)s", 
-        "region": "RegionOne", 
-        "internalURL": "http://130.206.80.62:8774/v2/$(tenant_id)s", 
+        {"adminURL": "http://130.206.80.62:8774/v2/$(tenant_id)s",
+        "region": "RegionOne",
+        "internalURL": "http://130.206.80.62:8774/v2/$(tenant_id)s",
         "publicURL": "http://130.206.80.62:8774/v2/$(tenant_id)s"}
-        ], 
-        "endpoints_links": [], 
-        "type": "compute", 
+        ],
+        "endpoints_links": [],
+        "type": "compute",
         "name": "nova"
-    }, 
-    {"endpoints": 
+    },
+    {"endpoints":
         [
-        {"adminURL": "http://130.206.80.62:9292/v1", 
-        "region": "RegionOne", 
-        "internalURL": "http://130.206.80.62:9292/v1", 
+        {"adminURL": "http://130.206.80.62:9292/v1",
+        "region": "RegionOne",
+        "internalURL": "http://130.206.80.62:9292/v1",
         "publicURL": "http://130.206.80.62:9292/v1"
         }
-        ], 
-        "endpoints_links": [], 
-        "type": "image", 
+        ],
+        "endpoints_links": [],
+        "type": "image",
         "name": "glance"
-    }, 
+    },
     {"endpoints": [
-        {"adminURL": "http://130.206.80.62:8776/v1/$(tenant_id)s", 
-        "region": "RegionOne", 
-        "internalURL": "http://130.206.80.62:8776/v1/$(tenant_id)s", 
+        {"adminURL": "http://130.206.80.62:8776/v1/$(tenant_id)s",
+        "region": "RegionOne",
+        "internalURL": "http://130.206.80.62:8776/v1/$(tenant_id)s",
         "publicURL": "http://130.206.80.62:8776/v1/$(tenant_id)s"
         }
-        ], 
-        "endpoints_links": [], 
-        "type": "volume", 
+        ],
+        "endpoints_links": [],
+        "type": "volume",
         "name": "volume"
     },
     {"endpoints": [
-        {"adminURL": "http://130.206.80.62:8080/v1", 
-        "region": "RegionOne", 
-        "internalURL": "http://130.206.80.62:8080/v1/AUTH_$(tenant_id)s", 
+        {"adminURL": "http://130.206.80.62:8080/v1",
+        "region": "RegionOne",
+        "internalURL": "http://130.206.80.62:8080/v1/AUTH_$(tenant_id)s",
         "publicURL": "http://130.206.80.62:8080/v1/AUTH_$(tenant_id)s"
         }
-        ], 
-        "endpoints_links": [], 
-        "type": "object-store", 
+        ],
+        "endpoints_links": [],
+        "type": "object-store",
         "name": "swift"
-    }, 
+    },
     {"endpoints": [
-        {"adminURL": "http://130.206.80.62:35357/v2.0", 
-        "region": "RegionOne", 
-        "internalURL": "http://130.206.80.62:5000/v2.0", 
+        {"adminURL": "http://130.206.80.62:35357/v2.0",
+        "region": "RegionOne",
+        "internalURL": "http://130.206.80.62:5000/v2.0",
         "publicURL": "http://130.206.80.62:5000/v2.0"
         }
-        ], 
-        "endpoints_links": [], 
-        "type": "identity", 
+        ],
+        "endpoints_links": [],
+        "type": "identity",
         "name": "keystone"
     }
 ];
 
 var getCatalogue = function (tenantId) {
     return JSON.parse(JSON.stringify(serviceCatalog).replace(/\$\(tenant_id\)s/g, tenantId));
-} 
+}
 
 var generateAccessResponse = function (token, tenant, user_id, user_name, roles) {
 
-    return {"access": 
+    return {"access":
             {
-            "token": 
-            {"expires": "2015-07-09T15:16:07Z", 
-            "id": token, 
+            "token":
+            {"expires": "2015-07-09T15:16:07Z",
+            "id": token,
             "tenant": tenant
-            }, 
+            },
             "serviceCatalog": getCatalogue(tenant.id),
             "user": {
-                "username": user_id, 
-                "roles_links": [], 
-                "id": user_id, 
-                "roles": roles, 
+                "username": user_id,
+                "roles_links": [],
+                "id": user_id,
+                "roles": roles,
                 "name": user_name
             }
         }
@@ -115,20 +115,20 @@ var generateAccessResponseForXML = function (token, tenant, user_id, user_name, 
         newRoles.push(nr);
     }
 
-    return {"access": 
+    return {"access":
             {
             "_xmlns" : "http://docs.openstack.org/identity/api/v2.0",
-            "token": 
-            {"_expires": "2015-07-09T15:16:07Z", 
-            "_id": token, 
+            "token":
+            {"_expires": "2015-07-09T15:16:07Z",
+            "_id": token,
             "tenant": tenant
-            }, 
+            },
             "serviceCatalog": getCatalogue(tenant.id),
             "user": {
-                "_username": user_id, 
-                "roles_links": [], 
-                "_id": user_id, 
-                "roles": newRoles, 
+                "_username": user_id,
+                "roles_links": [],
+                "_id": user_id,
+                "roles": newRoles,
                 "_name": user_name
             }
         }
@@ -140,12 +140,12 @@ var generateToken = function () {
 }
 
 var pad = function(number, length) {
-   
+
     var str = '' + number;
     while (str.length < length) {
         str = '0' + str;
     }
-   
+
     return str;
 
 }
@@ -175,8 +175,8 @@ var getUserData = function (access_token, callback, callbackError) {
                id: pad(resp1.actorId, 32),
                name: resp1.nickName,
                roles: [
-                        {"id": "8db87ccbca3b4d1ba4814c3bb0d63aab", "name": "Member"}, 
-                        {"id": "09e95db0ea3f4495a64e95bfc64b0c55", "name": "admin"}
+                        {"id": "8db87ccbca3b4d1ba4814c3bb0d63aab", "name": "Member"}
+                        //{"id": "09e95db0ea3f4495a64e95bfc64b0c55", "name": "admin"}
                     ]
             };
 
@@ -192,7 +192,7 @@ var getUserData = function (access_token, callback, callbackError) {
                id: '6571e3422ad84f7d828ce2f30373b3d4',
                name: "FIWARE",
                roles: [
-                        {"id": "8db87ccbca3b4d1ba4814c3bb0d63aab", "name": "Member"}, 
+                        {"id": "8db87ccbca3b4d1ba4814c3bb0d63aab", "name": "Member"},
                         {"id": "09e95db0ea3f4495a64e95bfc64b0c55", "name": "admin"}
                     ]
             },
@@ -235,33 +235,33 @@ var createToken = function () {
             if (!token) {
                 token = generateToken();
                 console.log('[CREDENTIALS AUTH] Generating new token for service', body.auth.passwordCredentials.username, 'token: ', token);
-            } 
+            }
 
             // This case the user is admin
             var isAdmin = false;
-            
+
             if (body.auth.tenantName !== undefined && body.auth.passwordCredentials.username == "admin" && body.auth.passwordCredentials.password == "openstack") {
                 tenantId = body.auth.tenantName;
                 isAdmin = true;
             }
 
-            var resp = 
-                {"access": 
-                    {"token": 
-                        {"expires": "2015-07-09T15:16:07Z", 
-                        "id": token, 
-                        "tenant": 
+            var resp =
+                {"access":
+                    {"token":
+                        {"expires": "2015-07-09T15:16:07Z",
+                        "id": token,
+                        "tenant":
                             {"description": "Service tenant", "enabled": true, "name": "service", "id": tenantId}
-                        }, 
-                        "serviceCatalog": getCatalogue(tenantId), 
+                        },
+                        "serviceCatalog": getCatalogue(tenantId),
                         "user": {
-                            "username": body.auth.passwordCredentials.username, 
-                            "roles_links": [], 
-                            "id": "91c72f314d93470b90a7c1ba21d7e352", 
+                            "username": body.auth.passwordCredentials.username,
+                            "roles_links": [],
+                            "id": "91c72f314d93470b90a7c1ba21d7e352",
                             "roles": [
-                                {"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"}, 
+                                {"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"},
                                 {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}
-                            ], 
+                            ],
                             "name": body.auth.passwordCredentials.username}
                         }
                     };
@@ -271,22 +271,22 @@ var createToken = function () {
             res.setHeader("Content-Type", "application/json");
             if (req.headers['accept'] === 'application/xml') {
 
-                resp = 
-                    {"access": 
-                        {"token": 
-                            {"_expires": "2015-07-09T15:16:07Z", 
-                            "_id": token, 
-                            "tenant": 
+                resp =
+                    {"access":
+                        {"token":
+                            {"_expires": "2015-07-09T15:16:07Z",
+                            "_id": token,
+                            "tenant":
                                 {"_enabled": true, "_name": "service", "_id": tenantId}
-                            }, 
+                            },
                             "user": {
-                                "username": body.auth.passwordCredentials.username, 
-                                "roles_links": [], 
-                                "id": "91c72f314d93470b90a7c1ba21d7e352", 
+                                "username": body.auth.passwordCredentials.username,
+                                "roles_links": [],
+                                "id": "91c72f314d93470b90a7c1ba21d7e352",
                                 "roles": [
-                                    {"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"}, 
+                                    {"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"},
                                     {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}
-                                ], 
+                                ],
                                 "name": body.auth.passwordCredentials.username}
                             }
                         };
@@ -298,7 +298,7 @@ var createToken = function () {
 
             res.send(userInfo);
         } else {
-            
+
             console.log('[TOKEN AUTH] Checking token for user', body.auth.token.id, 'and tenant ', body.auth.tenantId);
 
             getUserData(body.auth.token.id, function (status, resp) {
@@ -330,7 +330,7 @@ var createToken = function () {
                         token = generateToken();
                         authDataBase[token] = {access_token: body.auth.token.id, tenant: body.auth.tenantId, isAdmin: false};
                         console.log('[TOKEN AUTH] Generating new token for user', body.auth.token.id, 'and tenant ', body.auth.tenantId, 'token: ', token);
-                    } 
+                    }
                     //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
 
                     var ten = {description: "Tenant from IDM", enabled: true, id: myTenant.id, name: myTenant.name}
@@ -342,7 +342,7 @@ var createToken = function () {
                     res.send(401, 'User unathorized for this tenant');
                 }
 
-                
+
             }, function (status, e) {
                 if (status === 401) {
                     console.log('[VALIDATION] User token not authorized');
@@ -352,7 +352,7 @@ var createToken = function () {
                     res.send(503, 'Error in IDM communication');
                 }
             });
-           
+
         }
     }
 }
@@ -381,14 +381,14 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
 
     if (authDataBase[req.headers['x-auth-token']]) {
         console.log('[VALIDATION] Authorization OK from service', authDataBase[req.headers['x-auth-token']].access_token);
-    
+
         var success = false;
 
         if (authDataBase[req.params.token].isAdmin) {
             var token = req.params.token;
 
             var roles = [
-                {"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"}, 
+                {"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"},
                 {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}
             ];
             var tenant = {"description": "tenant", "enabled": true, "name": "tenant " + authDataBase[token].tenant, "id": authDataBase[token].tenant};
@@ -406,7 +406,7 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
             }
 
             console.log("[VALIDATION] User info: ", userInfo);
-    
+
             res.send(userInfo);
 
         } else if(authDataBase[req.params.token]) {
@@ -428,7 +428,7 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
                     //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
                     var ten = {description: "Tenant from IDM", enabled: true, id: myTenant.id, name: myTenant.name};
                     var access = generateAccessResponse(req.params.token, ten, resp.nickName, resp.displayName, myTenant.roles);
-                        
+
                     delete access.access['serviceCatalog'];
                     console.log('[VALIDATION] User token OK');
 
@@ -444,7 +444,7 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
                     }
 
                     console.log("[VALIDATION] User info: ", userInfo);
-		    
+
                     res.send(userInfo);
                 } else {
                     console.log('[VALIDATION] User token not authorized');
@@ -461,9 +461,9 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
                     console.log('[VALIDATION] Error in IDM communication ', e);
                     res.send(503, 'Error in IDM communication');
                 }
-                
+
             });
-            
+
         } else {
             console.log('[VALIDATION] User token not found');
             res.send(404, 'User token not found');
@@ -472,7 +472,7 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
         console.log('[VALIDATION] Service unauthorized');
         res.send(401, 'Service not authorized');
     }
-    
+
 });
 
 // Token validation from PEP proxies (access-tokens)
@@ -494,7 +494,7 @@ adminAPI.get('/v2.0/access-tokens/:token', function(req, res) {
             }
             console.log("Response: ", userInfo);
             res.send(userInfo);
-          
+
         }, function (status, e) {
             if (status === 401) {
                 console.log('[VALIDATION] User token not authorized');
@@ -504,13 +504,13 @@ adminAPI.get('/v2.0/access-tokens/:token', function(req, res) {
                 res.send(503, 'Error in IDM communication');
             }
         });
-            
+
 
     } else {
         console.log('[VALIDATION] Service unauthorized');
         res.send(401, 'Service not authorized');
     }
-    
+
 });
 
 clientAPI.get('/v2.0/tokens/:token', function(req, res) {
