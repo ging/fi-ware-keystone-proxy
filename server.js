@@ -165,6 +165,7 @@ var getUserData = function (access_token, callback, callbackError) {
     proxy.sendData("https", options, undefined, undefined, function (status, resp) {
 
         var resp1 = JSON.parse(resp);
+        console.log("Response from IDM: ", resp);
 
         for (var orgIdx in resp1.organizations) {
             var org = resp1.organizations[orgIdx];
@@ -185,6 +186,11 @@ var getUserData = function (access_token, callback, callbackError) {
         };
 
         resp1.organizations.push(myOrg);
+        for (var orgIdx in resp1.organizations) {
+            var org = resp1.organizations[orgIdx];
+            org.name = org.displayName;
+            delete org.displayName;
+        }
 
 /*
         resp1.organizations = [
