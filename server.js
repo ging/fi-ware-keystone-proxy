@@ -376,8 +376,7 @@ adminAPI.post('/v2.0/tokens', createToken());
 
 clientAPI.post('/v2.0/tokens', createToken());
 
-// Token validation from keystone-middlewares
-adminAPI.get('/v2.0/tokens/:token', function(req, res) {
+var validateToken = function(req, res) {
     // Validate token
     console.log('[VALIDATION] Validate user token', req.params.token, 'with auth token ', req.headers['x-auth-token']);
 
@@ -474,7 +473,15 @@ adminAPI.get('/v2.0/tokens/:token', function(req, res) {
         console.log('[VALIDATION] Service unauthorized');
         res.send(401, 'Service not authorized');
     }
+};
 
+// Token validation from keystone-middlewares
+adminAPI.get('/v2.0/tokens/:token', function(req, res) {
+    validateToken(req, res);
+});
+
+clientAPI.get('/v2.0/tokens/:token', function(req, res) {
+    validateToken(req, res);
 });
 
 // Token validation from PEP proxies (access-tokens)
@@ -513,12 +520,6 @@ adminAPI.get('/v2.0/access-tokens/:token', function(req, res) {
         res.send(401, 'Service not authorized');
     }
 
-});
-
-clientAPI.get('/v2.0/tokens/:token', function(req, res) {
-    // Validate token
-    console.log('++++VALIDATE REQ ', req.params.token);
-    res.send(JSON.stringify(userToken));
 });
 
 clientAPI.all('*', function(req, res) {
