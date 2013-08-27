@@ -169,7 +169,7 @@ var getUserData = function (access_token, callback, callbackError) {
 
         for (var orgIdx in resp1.organizations) {
             var org = resp1.organizations[orgIdx];
-            org.id = pad(org.id, 32);
+            org.id = pad(org.actorId, 32);
             org.name = org.displayName;
         }
 
