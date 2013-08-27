@@ -95,7 +95,7 @@ var generateAccessResponse = function (token, tenant, user_id, user_name, roles)
             "id": token, 
             "tenant": tenant
             }, 
-            "serviceCatalog": getCatalogue(tenant.id),
+            "serviceCatalog": getCatalogue(tenant.actorId),
             "user": {
                 "username": user_id, 
                 "roles_links": [], 
@@ -123,7 +123,7 @@ var generateAccessResponseForXML = function (token, tenant, user_id, user_name, 
             "_id": token, 
             "tenant": tenant
             }, 
-            "serviceCatalog": getCatalogue(tenant.id),
+            "serviceCatalog": getCatalogue(tenant.actorId),
             "user": {
                 "_username": user_id, 
                 "roles_links": [], 
