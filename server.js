@@ -227,6 +227,10 @@ var createToken = function () {
 
             var tenantId = '96d9611e4b514c2a9804376a899103f1';
 
+            if (body.auth.tenantName !== udnefined) {
+                tenantId = body.auth.tenantName;
+            }
+
             for (var t in authDataBase) {
                 if (authDataBase[t].access_token === body.auth.passwordCredentials.username && authDataBase[t].tenant === body.auth.tenantName) {
                     token = t;
