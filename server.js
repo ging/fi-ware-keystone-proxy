@@ -252,6 +252,7 @@ var createToken = function () {
                 isAdmin = true;
             } else {
                 res.send(401, 'User token not authorized');
+                return;
             }
 
             var resp =
