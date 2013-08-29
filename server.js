@@ -227,7 +227,7 @@ var createToken = function () {
 
             var tenantId = '96d9611e4b514c2a9804376a899103f1';
 
-            if (body.auth.tenantName !== udnefined) {
+            if (body.auth.tenantName !== undefined) {
                 tenantId = body.auth.tenantName;
             }
 
