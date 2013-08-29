@@ -2,7 +2,8 @@ var express = require('express'),
     clientAPI = express(),
     adminAPI = express(),
     proxy = require('./HTTPClient.js'),
-    xmlParser = require('./xml2json');
+    xmlParser = require('./xml2json'),
+    config = require('./config.js');
 
 var idmHostName = 'idm.lab.fi-ware.eu';
 
@@ -242,7 +243,7 @@ var createToken = function () {
             // This case the user is admin
             var isAdmin = false;
 
-            if (body.auth.tenantName !== undefined && body.auth.passwordCredentials.username == "admin" && body.auth.passwordCredentials.password == "openstack") {
+            if (body.auth.tenantName !== undefined && body.auth.passwordCredentials.username == config.admin_user && body.auth.passwordCredentials.password == config.admin_pass) {
                 tenantId = body.auth.tenantName;
                 if (authDataBase[token] !== undefined && authDataBase[token].tenant !== tenantId) {
                     token = generateToken();
