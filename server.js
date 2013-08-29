@@ -244,6 +244,9 @@ var createToken = function () {
 
             if (body.auth.tenantName !== undefined && body.auth.passwordCredentials.username == "admin" && body.auth.passwordCredentials.password == "openstack") {
                 tenantId = body.auth.tenantName;
+                if (authDataBase[token] !== undefined && authDataBase[token].tenant !== tenantId) {
+                    token = generateToken();
+                }
                 isAdmin = true;
             }
 
