@@ -245,10 +245,9 @@ var createToken = function () {
 
             if (body.auth.tenantName !== undefined && body.auth.passwordCredentials.username == config.admin_user && body.auth.passwordCredentials.password == config.admin_pass) {
                 tenantId = body.auth.tenantName;
-                if (authDataBase[token] !== undefined && authDataBase[token].tenant !== tenantId) {
-                    token = generateToken();
-                }
                 isAdmin = true;
+            } else {
+                res.send(401, 'User token not authorized');
             }
 
             var resp =
@@ -352,7 +351,7 @@ var createToken = function () {
             }, function (status, e) {
                 if (status === 401) {
                     console.log('[VALIDATION] User token not authorized');
-                    res.send(404, 'User token not authorized');
+                    res.send(401, 'User token not authorized');
                 } else {
                     console.log('[VALIDATION] Error in IDM communication ', e);
                     res.send(503, 'Error in IDM communication');
