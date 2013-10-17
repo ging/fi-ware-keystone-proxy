@@ -168,7 +168,7 @@ var getUserData = function (access_token, callback, callbackError) {
         var resp1 = JSON.parse(resp);
         console.log("Response from IDM: ", resp);
 
-        if (resp != null) {
+        if (resp1 !== null) {
 
             for (var orgIdx in resp1.organizations) {
                 var org = resp1.organizations[orgIdx];
