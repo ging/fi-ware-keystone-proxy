@@ -505,7 +505,9 @@ adminAPI.get('/v2.0/access-tokens/:token', function(req, res) {
             res.send(userInfo);
 
         }, function (status, e) {
-            if (status === 401) {
+            if (status === 200) {
+                res.send(200, "{}");
+            } else if (status === 401) {
                 console.log('[VALIDATION] User token not authorized');
                 res.send(404, 'User token not authorized');
             } else {
