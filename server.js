@@ -166,7 +166,7 @@ var getUserData = function (access_token, callback, callbackError) {
     proxy.sendData("https", options, undefined, undefined, function (status, resp) {
 
         var resp1 = JSON.parse(resp);
-        console.log("Response from IDM: ", resp);
+        //console.log("Response from IDM: ", resp);
 
         if (resp1 !== null) {
 
@@ -419,7 +419,7 @@ var validateToken = function(req, res) {
                 res.setHeader("Content-Type", "application/xml");
             }
 
-            console.log("[VALIDATION] User info: ", userInfo);
+            //console.log("[VALIDATION] User info: ", userInfo);
 
             res.send(userInfo);
 
@@ -457,7 +457,7 @@ var validateToken = function(req, res) {
                         res.setHeader("Content-Type", "application/xml");
                     }
 
-                    console.log("[VALIDATION] User info: ", userInfo);
+                    //console.log("[VALIDATION] User info: ", userInfo);
 
                     res.send(userInfo);
                 } else {
@@ -514,7 +514,7 @@ adminAPI.get('/v2.0/access-tokens/:token', function(req, res) {
             if (req.headers['accept'] === 'application/xml') {
                 userInfo = xmlParser.json2xml_str(resp);
             }
-            console.log("Response: ", userInfo);
+            //console.log("Response: ", userInfo);
             res.send(userInfo);
 
         }, function (status, e) {
