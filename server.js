@@ -2,7 +2,8 @@ var express = require('express'),
     clientAPI = express(),
     adminAPI = express(),
     proxy = require('./HTTPClient.js'),
-    xmlParser = require('./xml2json');
+    xmlParser = require('./xml2json'),
+    config = require('./config.js');
 
 var idmHostName = 'idm.lab.fi-ware.eu';
 
@@ -94,7 +95,7 @@ var generateAccessResponse = function (token, tenant, user_id, user_name, roles)
             {"expires": "2015-07-09T15:16:07Z",
             "id": token,
             "tenant": tenant
-            },
+            }, 
             "serviceCatalog": getCatalogue(tenant.id),
             "user": {
                 "username": user_id,
@@ -122,7 +123,7 @@ var generateAccessResponseForXML = function (token, tenant, user_id, user_name, 
             {"_expires": "2015-07-09T15:16:07Z",
             "_id": token,
             "tenant": tenant
-            },
+            }, 
             "serviceCatalog": getCatalogue(tenant.id),
             "user": {
                 "_username": user_id,
@@ -169,7 +170,7 @@ var getUserData = function (access_token, callback, callbackError) {
 
         for (var orgIdx in resp1.organizations) {
             var org = resp1.organizations[orgIdx];
-            org.id = pad(org.id, 32);
+            org.id = pad(org.actorId, 32);
             org.name = org.displayName;
         }
 
@@ -226,8 +227,12 @@ var createToken = function () {
 
             var tenantId = '96d9611e4b514c2a9804376a899103f1';
 
+            if (body.auth.tenantName !== undefined) {
+                tenantId = body.auth.tenantName;
+            }
+
             for (var t in authDataBase) {
-                if (authDataBase[t].access_token === body.auth.passwordCredentials.username) {
+                if (authDataBase[t].access_token === body.auth.passwordCredentials.username && authDataBase[t].tenant === body.auth.tenantName) {
                     token = t;
                     console.log('[CREDENTIALS AUTH] Getting existing token for service', body.auth.passwordCredentials.username, 'token: ', token);
                     break;
@@ -242,9 +247,12 @@ var createToken = function () {
             // This case the user is admin
             var isAdmin = false;
 
-            if (body.auth.tenantName !== undefined && body.auth.passwordCredentials.username == "admin" && body.auth.passwordCredentials.password == "openstack") {
+            if (body.auth.tenantName !== undefined && body.auth.passwordCredentials.username == config.admin_user && body.auth.passwordCredentials.password == config.admin_pass) {
                 tenantId = body.auth.tenantName;
                 isAdmin = true;
+            } else {
+                res.send(401, 'User token not authorized');
+                return;
             }
 
             var resp =
@@ -348,7 +356,7 @@ var createToken = function () {
             }, function (status, e) {
                 if (status === 401) {
                     console.log('[VALIDATION] User token not authorized');
-                    res.send(404, 'User token not authorized');
+                    res.send(401, 'User token not authorized');
                 } else {
                     console.log('[VALIDATION] Error in IDM communication ', e);
                     res.send(503, 'Error in IDM communication');
