@@ -168,26 +168,29 @@ var getUserData = function (access_token, callback, callbackError) {
         var resp1 = JSON.parse(resp);
         console.log("Response from IDM: ", resp);
 
-        for (var orgIdx in resp1.organizations) {
-            var org = resp1.organizations[orgIdx];
-            org.id = pad(org.actorId, 32);
-            org.name = org.displayName;
-        }
+        if (resp != null) {
 
-        var myOrg = {
-               id: pad(resp1.actorId, 32),
-               name: resp1.nickName,
-               roles: [
-                        {"id": "8db87ccbca3b4d1ba4814c3bb0d63aab", "name": "Member"}
-                        //{"id": "09e95db0ea3f4495a64e95bfc64b0c55", "name": "admin"}
-                    ]
+            for (var orgIdx in resp1.organizations) {
+                var org = resp1.organizations[orgIdx];
+                org.id = pad(org.actorId, 32);
+                org.name = org.displayName;
+            }
+
+            var myOrg = {
+                   id: pad(resp1.actorId, 32),
+                   name: resp1.nickName,
+                   roles: [
+                            {"id": "8db87ccbca3b4d1ba4814c3bb0d63aab", "name": "Member"}
+                            //{"id": "09e95db0ea3f4495a64e95bfc64b0c55", "name": "admin"}
+                        ]
+                };
+
+            if (resp1.organizations === undefined) {
+                resp1.organizations = [];
             };
 
-        if (resp1.organizations === undefined) {
-            resp1.organizations = [];
-        };
-
-        resp1.organizations.push(myOrg);
+            resp1.organizations.push(myOrg);
+        }
 
 /*
         resp1.organizations = [
