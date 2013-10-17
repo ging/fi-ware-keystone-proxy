@@ -190,6 +190,8 @@ var getUserData = function (access_token, callback, callbackError) {
             };
 
             resp1.organizations.push(myOrg);
+        } else {
+            resp1 = {organizations:{}};
         }
 
 /*
