@@ -5,7 +5,33 @@ var express = require('express'),
     xmlParser = require('./xml2json'),
     config = require('./config.js');
 
-var idmHostName = 'idm.lab.fi-ware.eu';
+var tenantsDB = {};
+
+if (config.db) {
+
+    var mysql = require('mysql');
+    var connection = mysql.createConnection(config.db);
+
+    connection.connect();
+
+    connection.query('SELECT * FROM tenant', function(err, rows, fields) {
+      if (err) throw err;
+
+      for (var i in rows) {
+        if (rows[i].idm_id !== null) {
+            tenantsDB[pad(rows[i].idm_id, 32)] = rows[i].id;
+        }
+      }
+
+      console.log('VA : ', tenantsDB);
+      
+    });
+
+    connection.end();
+}
+
+
+var idmHostName = config.accountServer;
 
 //{token: {access_token: (service_name), tenant: }}
 var authDataBase = {};
@@ -87,7 +113,18 @@ var getCatalogue = function (tenantId) {
     return JSON.parse(JSON.stringify(serviceCatalog).replace(/\$\(tenant_id\)s/g, tenantId));
 }
 
+var searchOldTenants = function (tenantId) {
+
+    if (tenantsDB[tenantId]) {
+        return tenantsDB[tenantId];
+    }
+
+    return tenantId;
+}
+
 var generateAccessResponse = function (token, tenant, user_id, user_name, roles) {
+
+    tenant.id = searchOldTenants(tenant.id);
 
     return {"access":
             {
@@ -109,6 +146,8 @@ var generateAccessResponse = function (token, tenant, user_id, user_name, roles)
 }
 
 var generateAccessResponseForXML = function (token, tenant, user_id, user_name, roles) {
+
+    tenant.id = searchOldTenants(tenant.id);
 
     var newRoles = [];
     for (var r in roles) {
