@@ -5,7 +5,7 @@ var express = require('express'),
     xmlParser = require('./xml2json'),
     config = require('./config.js');
 
-var idmHostName = 'idm.lab.fi-ware.eu';
+var idmHostName = 'account.lab.fi-ware.eu';
 
 //{token: {access_token: (service_name), tenant: }}
 var authDataBase = {};
