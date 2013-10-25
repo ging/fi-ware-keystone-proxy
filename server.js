@@ -516,6 +516,41 @@ clientAPI.get('/v2.0/tokens/:token', function(req, res) {
     validateToken(req, res);
 });
 
+clientAPI.get('/v2.0/tenants', function(req, res) {
+    console.log('[GET TENANTS] Get tenants for token: ', req.headers['x-auth-token']);
+
+    var oauth_token = req.headers['x-auth-token'];
+
+    if (authDataBase[req.headers['x-auth-token']]) {
+        oauth_token = authDataBase[req.headers['x-auth-token']].access_token;
+    } 
+
+    console.log('[GET TENANTS] Get user info for oauth_token: ', oauth_token);
+
+    getUserData(oauth_token, function (status, resp) {
+
+        console.log('[GET TENANTS] User access-token OK');
+
+        var orgs = JSON.stringify(resp.organizations);
+
+        if (req.headers['accept'] === 'application/xml') {
+            orgs = xmlParser.json2xml_str(resp.organizations);
+        }
+        res.send(orgs);
+
+    }, function (status, e) {
+        if (status === 200) {
+            res.send(200, "{}");
+        } else if (status === 401) {
+            console.log('[GET TENANTS] User token not authorized');
+            res.send(404, 'User token not authorized');
+        } else {
+            console.log('[GET TENANTS] Error in IDM communication ', e);
+            res.send(503, 'Error in IDM communication');
+        }
+    });
+});
+
 // Token validation from PEP proxies (access-tokens)
 adminAPI.get('/v2.0/access-tokens/:token', function(req, res) {
     // Validate token
@@ -557,7 +592,7 @@ adminAPI.get('/v2.0/access-tokens/:token', function(req, res) {
 });
 
 clientAPI.all('*', function(req, res) {
-   console.log("////////////////////////Lost request in clientAPI");
+   console.log("////////////////////////Lost request in clientAPI", req.params, req.body);
 
 });
 
