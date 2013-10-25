@@ -19,7 +19,7 @@ if (config.db) {
 
       for (var i in rows) {
         if (rows[i].idm_id !== null) {
-            tenantsDB[pad(rows[i].idm_id, 32)] = rows[i].id;
+            tenantsDB[rows[i].idm_id] = rows[i].id;
         }
       }
 
@@ -113,18 +113,18 @@ var getCatalogue = function (tenantId) {
     return JSON.parse(JSON.stringify(serviceCatalog).replace(/\$\(tenant_id\)s/g, tenantId));
 }
 
-var searchOldTenants = function (tenantId) {
+var getKeystoneTenant = function (tenantId) {
 
     if (tenantsDB[tenantId]) {
         return tenantsDB[tenantId];
+    } else {
+        return pad(tenantId, 32);
     }
-
-    return tenantId;
 }
 
 var generateAccessResponse = function (token, tenant, user_id, user_name, roles) {
 
-    tenant.id = searchOldTenants(tenant.id);
+    tenant.id = getKeystoneTenant(tenant.id);
 
     return {"access":
             {
@@ -147,7 +147,7 @@ var generateAccessResponse = function (token, tenant, user_id, user_name, roles)
 
 var generateAccessResponseForXML = function (token, tenant, user_id, user_name, roles) {
 
-    tenant.id = searchOldTenants(tenant.id);
+    tenant.id = getKeystoneTenant(tenant.id);
 
     var newRoles = [];
     for (var r in roles) {
@@ -211,12 +211,12 @@ var getUserData = function (access_token, callback, callbackError) {
 
             for (var orgIdx in resp1.organizations) {
                 var org = resp1.organizations[orgIdx];
-                org.id = pad(org.actorId, 32);
+                org.id = org.actorId;
                 org.name = org.displayName;
             }
 
             var myOrg = {
-                   id: pad(resp1.actorId, 32),
+                   id: resp1.actorId,
                    name: resp1.nickName,
                    roles: [
                             {"id": "8db87ccbca3b4d1ba4814c3bb0d63aab", "name": "Member"}
@@ -299,51 +299,31 @@ var createToken = function () {
                 return;
             }
 
-            var resp =
-                {"access":
-                    {"token":
-                        {"expires": "2015-07-09T15:16:07Z",
-                        "id": token,
-                        "tenant":
-                            {"description": "Service tenant", "enabled": true, "name": "service", "id": tenantId}
-                        },
-                        "serviceCatalog": getCatalogue(tenantId),
-                        "user": {
-                            "username": body.auth.passwordCredentials.username,
-                            "roles_links": [],
-                            "id": "91c72f314d93470b90a7c1ba21d7e352",
-                            "roles": [
-                                {"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"},
-                                {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}
-                            ],
-                            "name": body.auth.passwordCredentials.username}
-                        }
-                    };
+            var tenant = {"description": "Service tenant", "enabled": true, "name": "service", "id": tenantId};
+
+            var resp = generateAccessResponse(
+                token, 
+                tenant, 
+                "91c72f314d93470b90a7c1ba21d7e352", 
+                body.auth.passwordCredentials.username, 
+                [{"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"},
+                 {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}
+                ]);
+
             authDataBase[token] = {access_token: body.auth.passwordCredentials.username, tenant: tenantId, isAdmin: isAdmin};
 
             var userInfo = JSON.stringify(resp);
             res.setHeader("Content-Type", "application/json");
             if (req.headers['accept'] === 'application/xml') {
 
-                resp =
-                    {"access":
-                        {"token":
-                            {"_expires": "2015-07-09T15:16:07Z",
-                            "_id": token,
-                            "tenant":
-                                {"_enabled": true, "_name": "service", "_id": tenantId}
-                            },
-                            "user": {
-                                "username": body.auth.passwordCredentials.username,
-                                "roles_links": [],
-                                "id": "91c72f314d93470b90a7c1ba21d7e352",
-                                "roles": [
-                                    {"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"},
-                                    {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}
-                                ],
-                                "name": body.auth.passwordCredentials.username}
-                            }
-                        };
+                var resp = generateAccessResponseForXML(
+                    token, 
+                    tenant, 
+                    "91c72f314d93470b90a7c1ba21d7e352", 
+                    body.auth.passwordCredentials.username, 
+                    [{"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"},
+                     {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}
+                    ]);
 
 
                 userInfo = xmlParser.json2xml_str(resp);
@@ -362,7 +342,7 @@ var createToken = function () {
 
                 for (var org in orgs) {
 
-                    if (orgs[org].id === body.auth.tenantId) {
+                    if (orgs[org].id == body.auth.tenantId) {
                         myTenant = orgs[org];
                         break;
                     }
