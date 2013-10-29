@@ -16,4 +16,64 @@ config.db = undefined;
 //   	database : ''
 // };
 
+config.serviceCatalog = [
+    {"endpoints":
+        [
+        {"adminURL": "http://cloud.lab.fi-ware.eu:8774/v2/$(tenant_id)s",
+        "region": "RegionOne",
+        "internalURL": "http://cloud.lab.fi-ware.eu:8774/v2/$(tenant_id)s",
+        "publicURL": "http://cloud.lab.fi-ware.eu:8774/v2/$(tenant_id)s"}
+        ],
+        "endpoints_links": [],
+        "type": "compute",
+        "name": "nova"
+    },
+    {"endpoints":
+        [
+        {"adminURL": "http://172.30.1.204:9292/v1",
+        "region": "RegionOne",
+        "internalURL": "http://172.30.1.204:9292/v1",
+        "publicURL": "http://172.30.1.204:9292/v1"
+        }
+        ],
+        "endpoints_links": [],
+        "type": "image",
+        "name": "glance"
+    },
+    {"endpoints": [
+        {"adminURL": "http://cloud.lab.fi-ware.eu:8776/v1/$(tenant_id)s",
+        "region": "RegionOne",
+        "internalURL": "http://cloud.lab.fi-ware.eu:8776/v1/$(tenant_id)s",
+        "publicURL": "http://cloud.lab.fi-ware.eu:8776/v1/$(tenant_id)s"
+        }
+        ],
+        "endpoints_links": [],
+        "type": "volume",
+        "name": "volume"
+    },
+    {"endpoints": [
+        {"adminURL": "http://130.206.82.9:8080/v1",
+        "region": "RegionOne",
+        "internalURL": "http://130.206.82.9:8080/v1/AUTH_$(tenant_id)s",
+        "publicURL": "http://130.206.82.9:8080/v1/AUTH_$(tenant_id)s"
+        }
+        ],
+        "endpoints_links": [],
+        "type": "object-store",
+        "name": "swift"
+    },
+    {"endpoints": [
+        {"adminURL": "http://cloud.lab.fi-ware.eu:4731/v2.0",
+        "region": "RegionOne",
+        "internalURL": "http://cloud.lab.fi-ware.eu:4730/v2.0",
+        "publicURL": "http://cloud.lab.fi-ware.eu:4730/v2.0"
+        }
+        ],
+        "endpoints_links": [],
+        "type": "identity",
+        "name": "keystone"
+    }
+];
+
+
 module.exports = config;

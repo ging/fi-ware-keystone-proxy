@@ -50,67 +50,8 @@ var parseBody = function(req, res, next) {
     });
 };
 
-var serviceCatalog = [
-    {"endpoints":
-        [
-        {"adminURL": "http://130.206.80.62:8774/v2/$(tenant_id)s",
-        "region": "RegionOne",
-        "internalURL": "http://130.206.80.62:8774/v2/$(tenant_id)s",
-        "publicURL": "http://130.206.80.62:8774/v2/$(tenant_id)s"}
-        ],
-        "endpoints_links": [],
-        "type": "compute",
-        "name": "nova"
-    },
-    {"endpoints":
-        [
-        {"adminURL": "http://130.206.80.62:9292/v1",
-        "region": "RegionOne",
-        "internalURL": "http://130.206.80.62:9292/v1",
-        "publicURL": "http://130.206.80.62:9292/v1"
-        }
-        ],
-        "endpoints_links": [],
-        "type": "image",
-        "name": "glance"
-    },
-    {"endpoints": [
-        {"adminURL": "http://130.206.80.62:8776/v1/$(tenant_id)s",
-        "region": "RegionOne",
-        "internalURL": "http://130.206.80.62:8776/v1/$(tenant_id)s",
-        "publicURL": "http://130.206.80.62:8776/v1/$(tenant_id)s"
-        }
-        ],
-        "endpoints_links": [],
-        "type": "volume",
-        "name": "volume"
-    },
-    {"endpoints": [
-        {"adminURL": "http://130.206.80.62:8080/v1",
-        "region": "RegionOne",
-        "internalURL": "http://130.206.80.62:8080/v1/AUTH_$(tenant_id)s",
-        "publicURL": "http://130.206.80.62:8080/v1/AUTH_$(tenant_id)s"
-        }
-        ],
-        "endpoints_links": [],
-        "type": "object-store",
-        "name": "swift"
-    },
-    {"endpoints": [
-        {"adminURL": "http://130.206.80.62:35357/v2.0",
-        "region": "RegionOne",
-        "internalURL": "http://130.206.80.62:5000/v2.0",
-        "publicURL": "http://130.206.80.62:5000/v2.0"
-        }
-        ],
-        "endpoints_links": [],
-        "type": "identity",
-        "name": "keystone"
-    }
-];
-
 var getCatalogue = function (tenantId) {
-    return JSON.parse(JSON.stringify(serviceCatalog).replace(/\$\(tenant_id\)s/g, tenantId));
+    return JSON.parse(JSON.stringify(config.serviceCatalog).replace(/\$\(tenant_id\)s/g, tenantId));
 }
 
 var getKeystoneTenant = function (tenantId) {
