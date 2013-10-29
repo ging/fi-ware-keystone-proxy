@@ -88,7 +88,7 @@ var generateAccessResponse = function (token, tenant, user_id, user_name, roles)
 
 var generateAccessResponseForXML = function (token, tenant, user_id, user_name, roles) {
 
-    tenant.id = getKeystoneTenant(tenant.id);
+    tenant._id = getKeystoneTenant(tenant._id);
 
     var newRoles = [];
     for (var r in roles) {
@@ -254,9 +254,10 @@ var createToken = function () {
             res.setHeader("Content-Type", "application/json; charset=utf-8");
             if (req.headers['accept'] === 'application/xml') {
 
+                var ten = {"_enabled": true, "_id": tenantId, "_name": "service"};
                 var resp = generateAccessResponseForXML(
                     token, 
-                    tenant, 
+                    ten, 
                     "91c72f314d93470b90a7c1ba21d7e352", 
                     body.auth.passwordCredentials.username, 
                     [{"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"},
@@ -369,7 +370,7 @@ var validateToken = function(req, res) {
             res.setHeader("Content-Type", "application/json; charset=utf-8");
             if (req.headers['accept'] === 'application/xml') {
                 ten = {"_enabled": true, "_id": myTenant.id, "_name": myTenant.name};
-                access = generateAccessResponseForXML(token, tenant, authDataBase[token].access_token, authDataBase[token].access_token, roles);
+                access = generateAccessResponseForXML(token, ten, authDataBase[token].access_token, authDataBase[token].access_token, roles);
                 delete access.access['serviceCatalog'];
 
                 userInfo = xmlParser.json2xml_str(access);
