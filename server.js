@@ -448,7 +448,7 @@ var validateToken = function(req, res) {
 
                 for (var org in orgs) {
 
-                    if (orgs[org].id === authDataBase[req.params.token].tenant) {
+                    if (orgs[org].id == authDataBase[req.params.token].tenant) {
                         myTenant = orgs[org];
                         break;
                     }
