@@ -294,9 +294,6 @@ var createToken = function () {
             if (body.auth.tenantName !== undefined && body.auth.passwordCredentials.username == config.admin_user && body.auth.passwordCredentials.password == config.admin_pass) {
                 tenantId = body.auth.tenantName;
                 isAdmin = true;
-            } else {
-                res.send(401, 'User token not authorized');
-                return;
             }
 
             var tenant = {"description": "Service tenant", "enabled": true, "name": "service", "id": tenantId};
@@ -313,7 +310,7 @@ var createToken = function () {
             authDataBase[token] = {access_token: body.auth.passwordCredentials.username, tenant: tenantId, isAdmin: isAdmin};
 
             var userInfo = JSON.stringify(resp);
-            res.setHeader("Content-Type", "application/json");
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
             if (req.headers['accept'] === 'application/xml') {
 
                 var resp = generateAccessResponseForXML(
@@ -327,7 +324,7 @@ var createToken = function () {
 
 
                 userInfo = xmlParser.json2xml_str(resp);
-                res.setHeader("Content-Type", "application/xml");
+                res.setHeader("Content-Type", "application/xml; charset=utf-8");
             }
 
             res.send(userInfo);
@@ -428,14 +425,14 @@ var validateToken = function(req, res) {
             var access = generateAccessResponse(token, tenant, authDataBase[token].access_token, authDataBase[token].access_token, roles);
             delete access.access['serviceCatalog'];
             var userInfo = JSON.stringify(access);
-            res.setHeader("Content-Type", "application/json");
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
             if (req.headers['accept'] === 'application/xml') {
                 ten = {"_enabled": true, "_id": myTenant.id, "_name": myTenant.name};
                 access = generateAccessResponseForXML(token, tenant, authDataBase[token].access_token, authDataBase[token].access_token, roles);
                 delete access.access['serviceCatalog'];
 
                 userInfo = xmlParser.json2xml_str(access);
-                res.setHeader("Content-Type", "application/xml");
+                res.setHeader("Content-Type", "application/xml; charset=utf-8");
             }
 
             //console.log("[VALIDATION] User info: ", userInfo);
@@ -466,14 +463,14 @@ var validateToken = function(req, res) {
                     console.log('[VALIDATION] User token OK');
 
                     var userInfo = JSON.stringify(access);
-                    res.setHeader("Content-Type", "application/json");
+                    res.setHeader("Content-Type", "application/json; charset=utf-8");
                     if (req.headers['accept'] === 'application/xml') {
                         ten = {"_enabled": true, "_id": myTenant.id, "_name": myTenant.name};
                         access = generateAccessResponseForXML(req.params.token, ten, resp.nickName, resp.displayName, myTenant.roles);
                         delete access.access['serviceCatalog'];
 
                         userInfo = xmlParser.json2xml_str(access);
-                        res.setHeader("Content-Type", "application/xml");
+                        res.setHeader("Content-Type", "application/xml; charset=utf-8");
                     }
 
                     //console.log("[VALIDATION] User info: ", userInfo);
