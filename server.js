@@ -469,11 +469,24 @@ clientAPI.get('/v2.0/tenants', function(req, res) {
     getUserData(oauth_token, function (status, resp) {
 
         console.log('[GET TENANTS] User access-token OK');
-
-        var orgs = JSON.stringify(resp.organizations);
+        var tenants = [];
+        for (var orgIdx in resp.organizations) {
+            if (resp.organizations.hasOwnProperty(orgIdx)) {
+                  var org = resp.organizations[orgIdx];
+                  var tenant = {
+                    enabled: true,
+                    id: org.id,
+                    name: org.name,
+                    description: org.description
+                  }
+                  tenants.push(tenant);
+           }
+        }
+        
+        var orgs = JSON.stringify({tenants:tenants});
 
         if (req.headers['accept'] === 'application/xml') {
-            orgs = xmlParser.json2xml_str(resp.organizations);
+            orgs = xmlParser.json2xml_str({tenants:tenants});
         }
         res.send(orgs);
 
