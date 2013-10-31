@@ -301,9 +301,10 @@ var Token = (function() {
 
 	        var success = false;
 
-	        if (TokenDB.get(req.params.token) && TokenDB.get(req.params.token).isAdmin) {
+	        if (TokenDB.get(req.params.token) && TokenDB.get(req.params.token).access_token === undefined) {
 
 	        	// Is a token from the privileged user list
+	        	console.log("[VALIDATION] User from privileged list");
 
 	            var token = req.params.token;
 
@@ -332,7 +333,7 @@ var Token = (function() {
 	        } else if(TokenDB.get(req.params.token)) {
 
 	        	// Is a token obtained from OAuth access token
-
+	        	console.log("[VALIDATION] Retrieving user info from IDM");
 	            IDM.getUserData(TokenDB.get(req.params.token).access_token, function (status, resp) {
 
 	                var orgs = resp.organizations;
@@ -345,6 +346,7 @@ var Token = (function() {
 	                        break;
 	                    }
 	                }
+	                console.log("[VALIDATION] Tenant ", myTenant);
 
 	                if (myTenant) {
 	                    //var tid = "6571e3422ad84f7d828ce2f30373b3d4";

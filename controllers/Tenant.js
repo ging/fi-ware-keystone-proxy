@@ -14,7 +14,7 @@ var Tenant = (function() {
 	    }
 
 	    if (oauth_token === undefined) {
-	    	oauth_token = TokenDB.get(req.headers['x-auth-token']);
+	    	oauth_token = req.headers['x-auth-token'];
 	    }
 
 	    console.log('[GET TENANTS] Get user info for oauth_token: ', oauth_token);
