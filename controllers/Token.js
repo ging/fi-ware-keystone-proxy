@@ -100,7 +100,6 @@ var Token = (function() {
         var body = JSON.parse(req.body);
 
         console.log('[CREDENTIALS AUTH] Checking token for user', body.auth.passwordCredentials.username);
-        console.log("Req: ", body.auth);
 
         if (body.auth.tenantId !== undefined) {
         	tenantId = body.auth.tenantId;
@@ -279,7 +278,6 @@ var Token = (function() {
 	// Token creation from username/password or from OAuth tokens
 	var create = function(req, resp) {
 
-		console.log("[AUTHENTICATION]", req.body);
 		var body = JSON.parse(req.body);
         
         if (body.auth.passwordCredentials !== undefined) {
@@ -326,7 +324,7 @@ var Token = (function() {
 	                res.setHeader("Content-Type", "application/xml; charset=utf-8");
 	            }
 
-	            console.log("[VALIDATION] User info: ", userInfo);
+	            //console.log("[VALIDATION] User info: ", userInfo);
 
 	            res.send(userInfo);
 
@@ -346,7 +344,7 @@ var Token = (function() {
 	                        break;
 	                    }
 	                }
-	                console.log("[VALIDATION] Tenant ", myTenant);
+	                //console.log("[VALIDATION] Tenant ", myTenant);
 
 	                if (myTenant) {
 	                    //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
@@ -367,7 +365,7 @@ var Token = (function() {
 	                        res.setHeader("Content-Type", "application/xml; charset=utf-8");
 	                    }
 
-	                    console.log("[VALIDATION] User info: ", userInfo);
+	                    //console.log("[VALIDATION] User info: ", userInfo);
 
 	                    res.send(userInfo);
 	                } else {

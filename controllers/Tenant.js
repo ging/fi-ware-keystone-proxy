@@ -17,8 +17,6 @@ var Tenant = (function() {
 	    	oauth_token = req.headers['x-auth-token'];
 	    }
 
-	    console.log('[GET TENANTS] Get user info for oauth_token: ', oauth_token);
-
 	    if (oauth_token) {
 	        IDM.getUserData(oauth_token, function (status, resp) {
 
