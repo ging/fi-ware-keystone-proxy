@@ -41,7 +41,7 @@ exports.sendData = function(port, options, data, res, callBackOK, callbackError)
         res.send(resp);
     };
 
-    var url = port+"://" + options.host + ":" + options.port + options.path;
+    var url = port+"://" + options.host + ((options.port) ? (":" + options.port):"") + options.path;
     xhr = new XMLHttpRequest();
     xhr.open(options.method, url, true);
     if (options.headers["content-type"]) {

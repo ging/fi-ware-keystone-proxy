@@ -1,9 +1,12 @@
 var config = {};
 
-config.admin_user = "";
-config.admin_pass = "";
+config.adminUsers = {"user": {password: "pass", isAdmin: "false"}};
 
 config.accountServer = 'account.lab.fi-ware.eu';
+
+// OAUTH Cloud credentials in the Account server
+config.client_id = '';
+config.client_secret = '';
 
 // If db not necessary:
 config.db = undefined;
@@ -63,10 +66,10 @@ config.serviceCatalog = [
         "name": "swift"
     },
     {"endpoints": [
-        {"adminURL": "http://cloud.lab.fi-ware.eu:4731/v2.0",
+        {"adminURL": "http://localhost:4731/v2.0",
         "region": "RegionOne",
-        "internalURL": "http://cloud.lab.fi-ware.eu:4730/v2.0",
-        "publicURL": "http://cloud.lab.fi-ware.eu:4730/v2.0"
+        "internalURL": "http://localhost:4730/v2.0",
+        "publicURL": "http://localhost:4730/v2.0"
         }
         ],
         "endpoints_links": [],
