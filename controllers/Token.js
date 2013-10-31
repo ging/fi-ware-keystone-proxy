@@ -367,7 +367,7 @@ var Token = (function() {
 	                        res.setHeader("Content-Type", "application/xml; charset=utf-8");
 	                    }
 
-	                    //console.log("[VALIDATION] User info: ", userInfo);
+	                    console.log("[VALIDATION] User info: ", userInfo);
 
 	                    res.send(userInfo);
 	                } else {
