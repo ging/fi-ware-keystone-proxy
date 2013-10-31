@@ -319,7 +319,7 @@ var Token = (function() {
 	            res.setHeader("Content-Type", "application/json; charset=utf-8");
 	            if (req.headers['accept'] === 'application/xml') {
 	                ten = {"_enabled": true, "_id": myTenant.id, "_name": myTenant.name};
-	                access = generateAccessResponseForXML(token, ten, TokenDB.get(token).access_token, TokenDB.get(token).access_token, roles);
+	                access = generateAccessResponseForXML(token, ten, "admin", "admin", roles);
 	                delete access.access['serviceCatalog'];
 
 	                userInfo = xmlParser.json2xml_str(access);
