@@ -313,7 +313,7 @@ var Token = (function() {
 	                {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}
 	            ];
 	            var tenant = {"description": "tenant", "enabled": true, "name": "tenant " + TokenDB.get(token).tenant, "id": TokenDB.get(token).tenant};
-	            var access = generateAccessResponse(token, tenant, TokenDB.get(token).access_token, TokenDB.get(token).access_token, roles);
+	            var access = generateAccessResponse(token, tenant, "admin", "admin", roles);
 	            delete access.access['serviceCatalog'];
 	            var userInfo = JSON.stringify(access);
 	            res.setHeader("Content-Type", "application/json; charset=utf-8");
