@@ -13,6 +13,10 @@ var Tenant = (function() {
 	        oauth_token = TokenDB.get(req.headers['x-auth-token']).access_token;
 	    }
 
+	    if (oauth_token === undefined) {
+	    	oauth_token = TokenDB.get(req.headers['x-auth-token']);
+	    }
+
 	    console.log('[GET TENANTS] Get user info for oauth_token: ', oauth_token);
 
 	    if (oauth_token) {
@@ -44,26 +48,31 @@ var Tenant = (function() {
 		        if (status === 200) {
 		            res.send(200, "{}");
 		        } else if (status === 401) {
-		            console.log('[GET TENANTS] User token not authorized');
-		            res.send(401, 'User token not authorized');
+
+		        	// It can be an admin user.
+					if(TokenDB.get(req.headers['x-auth-token'])) {
+			        	// It's a privileged user
+				    	if (TokenDB.get(req.headers['x-auth-token']).isAdmin) {
+							var tenants = [{
+								enabled: true,
+								id: TokenDB.get(req.headers['x-auth-token']).tenant,
+								name: TokenDB.get(req.headers['x-auth-token']).tenant,
+								description: "Admin access"
+							}];
+							res.send(200, JSON.stringify({tenants:tenants}));
+				    	} else {
+				    		res.send(200, '{"tenants": []}');
+				    	}
+				    } else {
+				    	console.log('[GET TENANTS] User token not authorized');
+		            res.send(401, 'User token not authorized');	
+				    }
+		            
 		        } else {
 		            console.log('[GET TENANTS] Error in IDM communication ', e);
 		            res.send(503, 'Error in IDM communication');
 		        }
 		    });
-	    } else if(TokenDB.get(req.headers['x-auth-token'])) {
-	    	// It's a privileged user
-	    	if (TokenDB.get(req.headers['x-auth-token']).isAdmin) {
-				var tenants = [{
-					enabled: true,
-					id: TokenDB.get(req.headers['x-auth-token']).tenant,
-					name: TokenDB.get(req.headers['x-auth-token']).tenant,
-					description: "Admin access"
-				}];
-				res.send(200, JSON.stringify({tenants:tenants}));
-	    	} else {
-	    		res.send(200, '{"tenants": []}');
-	    	}
 	    } else {
 	    	console.log('[GET TENANTS] User token not authorized');
 		    res.send(401, 'User token not authorized');
