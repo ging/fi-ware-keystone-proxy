@@ -248,7 +248,7 @@ var Token = (function() {
                 }
 
                 if (!token) {
-                	token = TokenDB.createToken(body.auth.token.id, body.auth.tenantId, false);
+                	token = TokenDB.create(body.auth.token.id, body.auth.tenantId, false);
                     console.log('[TOKEN AUTH] Generating new token for user', body.auth.token.id, 'and tenant ', body.auth.tenantId, 'token: ', token);
                 }
                 //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
