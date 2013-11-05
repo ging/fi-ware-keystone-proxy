@@ -31,7 +31,11 @@ var TenantMappingDB = (function() {
 	}
 
 	var get = function(item) {
-		return tenantsMapping[item].id;
+		var id;
+		if (tenantsMapping[item]) {
+			id = tenantsMapping[item].id;
+		}
+		return id;
 	};
 
 	var getFromName = function(item) {
