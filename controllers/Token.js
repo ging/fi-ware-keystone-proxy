@@ -106,7 +106,7 @@ var Token = (function() {
         } else if (body.auth.tenantName !== undefined) {
             tenantId = body.auth.tenantName;
             if (tenantId === config.serviceTenantName) {
-            	tenantId = TenantMappingDB.getFromName(tenantId).id;
+            	tenantId = TenantMappingDB.getFromName(tenantId);
             }
         }
 
@@ -176,7 +176,7 @@ var Token = (function() {
 
         }
         console.log('[CREDENTIALS AUTH] Tenant ID', tenantId);
-        
+
         tenantId = tenantId || "96d9611e4b514c2a9804376a899103f1";
 
         var tenant = {"description": "Service tenant", "enabled": true, "name": "service", "id": tenantId};
