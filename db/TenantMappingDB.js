@@ -41,6 +41,7 @@ var TenantMappingDB = (function() {
 				return tenant.id;
 			}
 		}
+		return;
 	};
 
 	var set = function(item, data) {

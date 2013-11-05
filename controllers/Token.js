@@ -99,7 +99,7 @@ var Token = (function() {
         var tenantId = undefined;
         var body = JSON.parse(req.body);
 
-        console.log('[CREDENTIALS AUTH] Checking token for user', body.auth.passwordCredentials.username);
+        console.log('[CREDENTIALS AUTH] Checking user/pass for user', body.auth.passwordCredentials.username);
 
         if (body.auth.tenantId !== undefined) {
         	tenantId = body.auth.tenantId;
@@ -175,7 +175,8 @@ var Token = (function() {
             return;
 
         }
-
+        console.log('[CREDENTIALS AUTH] Tenant ID', tenantId);
+        
         tenantId = tenantId || "96d9611e4b514c2a9804376a899103f1";
 
         var tenant = {"description": "Service tenant", "enabled": true, "name": "service", "id": tenantId};
