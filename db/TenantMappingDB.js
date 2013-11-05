@@ -15,7 +15,7 @@ var TenantMappingDB = (function() {
 
 	      for (var i in rows) {
 	        if (rows[i].idm_id !== null) {
-	            tenantsMapping[rows[i].idm_id] = rows[i].id;
+	            tenantsMapping[rows[i].idm_id] = {id:rows[i].id, name: rows[i].name};
 	        }
 	      }
 
@@ -31,14 +31,24 @@ var TenantMappingDB = (function() {
 	}
 
 	var get = function(item) {
-		return tenantsMapping[item];
+		return tenantsMapping[item].id;
+	};
+
+	var getFromName = function(item) {
+		for (var i in tenantsMapping) {
+			var tenant = tenantsMapping[i];
+			if (tenant.name === item) {
+				return tenant.id;
+			}
+		}
 	};
 
 	var set = function(item, data) {
-		tenantsMapping[item] = data;
+		tenantsMapping[item] = {id:data};
 	};
 	return {
 		get: get,
+		getFromName: getFromName,
 		set: set,
 		list: list
 	}

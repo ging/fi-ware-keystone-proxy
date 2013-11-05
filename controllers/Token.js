@@ -105,6 +105,9 @@ var Token = (function() {
         	tenantId = body.auth.tenantId;
         } else if (body.auth.tenantName !== undefined) {
             tenantId = body.auth.tenantName;
+            if (tenantId === config.serviceTenantName) {
+            	tenantId = TenantMappingDB.getFromName(tenantId).id;
+            }
         }
 
         // This case the user is admin

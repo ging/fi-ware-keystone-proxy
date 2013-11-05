@@ -8,6 +8,8 @@ config.accountServer = 'account.lab.fi-ware.eu';
 config.client_id = '';
 config.client_secret = '';
 
+config.serviceTenantName = "";
+
 // If db not necessary:
 config.db = undefined;
 
