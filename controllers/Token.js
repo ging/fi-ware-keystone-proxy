@@ -299,7 +299,7 @@ var Token = (function() {
 	    console.log('[VALIDATION] Validate user token', req.params.token, 'with auth token ', req.headers['x-auth-token']);
 
 	    if (TokenDB.get(req.headers['x-auth-token'])) {
-	        console.log('[VALIDATION] Authorization OK from service', TokenDB.get(req.headers['x-auth-token']).access_token);
+	        console.log('[VALIDATION] Authorization OK from service', TokenDB.get(req.headers['x-auth-token']).name);
 
 	        var success = false;
 
@@ -356,7 +356,7 @@ var Token = (function() {
 	                    var access = generateAccessResponse(req.params.token, ten, resp.nickName, resp.displayName, myTenant.roles);
 
 	                    delete access.access['serviceCatalog'];
-	                    console.log('[VALIDATION] User token OK');
+	                    console.log('[VALIDATION] User token OK for user', resp.nickName);
 
 	                    var userInfo = JSON.stringify(access);
 	                    res.setHeader("Content-Type", "application/json; charset=utf-8");
