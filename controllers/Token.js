@@ -293,20 +293,28 @@ var Token = (function() {
         }
 	};
 
+	var log = function(type, data) {
+		console.log("[", type, "] ", data);
+	};
+
+	var validateLog = function(status, service, user, token, msg) {
+		log("VALIDATION", status + ": Service (" + service ") - User (" + user + ") - Token (" + token + ") - " + msg);
+	}
+
 	// Token validation
 	var validate = function(req, res) {
 	    // Validate token
-	    console.log('[VALIDATION] Validate user token', req.params.token, 'with auth token ', req.headers['x-auth-token']);
+	    //console.log('[VALIDATION] Validate user token', req.params.token, 'with auth token ', req.headers['x-auth-token']);
 
 	    if (TokenDB.get(req.headers['x-auth-token'])) {
-	        console.log('[VALIDATION] Authorization OK from service', TokenDB.get(req.headers['x-auth-token']).name);
+	        //console.log('[VALIDATION] Authorization OK from service', TokenDB.get(req.headers['x-auth-token']).name);
 
 	        var success = false;
 
 	        if (TokenDB.get(req.params.token) && TokenDB.get(req.params.token).access_token === undefined) {
 
 	        	// Is a token from the privileged user list
-	        	console.log("[VALIDATION] User from privileged list");
+	        	validateLog("Success", TokenDB.get(req.headers['x-auth-token']).name, TokenDB.get(req.params.token).name, req.params.token, "");
 
 	            var token = req.params.token;
 
@@ -335,7 +343,6 @@ var Token = (function() {
 	        } else if(TokenDB.get(req.params.token)) {
 
 	        	// Is a token obtained from OAuth access token
-	        	console.log("[VALIDATION] Retrieving user info from IDM");
 	            IDM.getUserData(TokenDB.get(req.params.token).access_token, function (status, resp) {
 
 	                var orgs = resp.organizations;
@@ -356,7 +363,8 @@ var Token = (function() {
 	                    var access = generateAccessResponse(req.params.token, ten, resp.nickName, resp.displayName, myTenant.roles);
 
 	                    delete access.access['serviceCatalog'];
-	                    console.log('[VALIDATION] User token OK for user', resp.nickName);
+	                    validateLog("Success", TokenDB.get(req.headers['x-auth-token']).name, resp.nickName, req.params.token, "");
+	                    //console.log('[VALIDATION] User token OK for user', resp.nickName);
 
 	                    var userInfo = JSON.stringify(access);
 	                    res.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -373,7 +381,7 @@ var Token = (function() {
 
 	                    res.send(userInfo);
 	                } else {
-	                    console.log('[VALIDATION] User token not authorized');
+	                    validateLog("Error", TokenDB.get(req.headers['x-auth-token']).name, undefined, req.params.token, "User Token not authorized");
 	                    res.send(404, 'User token not authorized');
 	                }
 
@@ -381,21 +389,21 @@ var Token = (function() {
 	            }, function (status, e) {
 	                if (status === 401) {
 	                    delete TokenDB.get(req.params.token);
-	                    console.log('[VALIDATION] User token not authorized');
+	                    validateLog("Error", TokenDB.get(req.headers['x-auth-token']).name, undefined, req.params.token, "OAuth token not found in IDM");
 	                    res.send(404, 'User token not authorized');
 	                } else {
-	                    console.log('[VALIDATION] Error in IDM communication ', e);
+	                    validateLog("Error", TokenDB.get(req.headers['x-auth-token']).name, undefined, req.params.token, "Error in IDM communication");
 	                    res.send(503, 'Error in IDM communication');
 	                }
 
 	            });
 
 	        } else {
-	            console.log('[VALIDATION] User token not found');
+	        	validateLog("Error", TokenDB.get(req.headers['x-auth-token']).name, undefined, req.params.token, "User Token not found");
 	            res.send(404, 'User token not found');
 	        }
 	    } else {
-	        console.log('[VALIDATION] Service unauthorized');
+	        validateLog("Error", undefined, undefined, req.headers['x-auth-token'], "Service unauthorized");
 	        res.send(401, 'Service not authorized');
 	    }
 	};
