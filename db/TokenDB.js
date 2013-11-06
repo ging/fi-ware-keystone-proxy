@@ -5,9 +5,9 @@ var TokenDB = (function() {
 	    return require('crypto').randomBytes(16).toString('hex');
 	};
 
-	var create = function(access_token, tenant, isAdmin) {
+	var create = function(access_token, tenant, isAdmin, name) {
 		var token = generateToken();
-		set(token, {access_token: access_token, tenant: tenant, isAdmin: isAdmin});
+		set(token, {access_token: access_token, tenant: tenant, isAdmin: isAdmin, name: name});
 		return token;
 	};
 	

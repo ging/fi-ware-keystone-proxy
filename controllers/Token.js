@@ -140,8 +140,8 @@ var Token = (function() {
                             var token = TokenDB.search(access_token, tenantId);
 
                             if (!token) {
-                            	token = TokenDB.create(access_token, tenantId, false);
-                                console.log('[TOKEN AUTH] Generating new token for user', access_token, 'and tenant ', tenantId, 'token: ', token);
+                            	token = TokenDB.create(access_token, tenantId, false, body.auth.passwordCredentials.username);
+                                console.log('[TOKEN AUTH] Generating new token for user', body.auth.passwordCredentials.username, 'and tenant ', tenantId, 'token: ', token);
                             }
                             //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
 
@@ -149,7 +149,7 @@ var Token = (function() {
                             var access = generateAccessResponse(token, ten, resp.nickName, resp.displayName, myTenant.roles);
                             res.send(JSON.stringify(access));
                         } else {
-                            console.log('[TOKEN AUTH] Authentication error for ', access_token, 'and tenant ', tenantId);
+                            console.log('[TOKEN AUTH] Authentication error for ', body.auth.passwordCredentials.username, 'and tenant ', tenantId);
                             res.send(401, 'User unathorized for this tenant');
                         }
                     } else {
@@ -184,7 +184,7 @@ var Token = (function() {
         token = TokenDB.search(body.auth.passwordCredentials.username, body.auth.tenantName);
 
         if (!token) {
-            token = TokenDB.create(undefined, tenantId, isAdmin);
+            token = TokenDB.create(undefined, tenantId, isAdmin, body.auth.passwordCredentials.username);
             console.log('[CREDENTIALS AUTH] Generating new token for user', body.auth.passwordCredentials.username, 'token: ', token);
         }
 
@@ -251,8 +251,8 @@ var Token = (function() {
                 }
 
                 if (!token) {
-                	token = TokenDB.create(body.auth.token.id, body.auth.tenantId, false);
-                    console.log('[TOKEN AUTH] Generating new token for user', body.auth.token.id, 'and tenant ', body.auth.tenantId, 'token: ', token);
+                	token = TokenDB.create(body.auth.token.id, body.auth.tenantId, false, resp.nickName);
+                    console.log('[TOKEN AUTH] Generating new token for user', resp.nickName, 'and tenant ', body.auth.tenantId, 'token: ', token);
                 }
                 //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
 
@@ -261,7 +261,7 @@ var Token = (function() {
 
                 res.send(JSON.stringify(access));
             } else {
-                console.log('[TOKEN AUTH] Authentication error for ', body.auth.token.id, 'and tenant ', body.auth.tenantId);
+                console.log('[TOKEN AUTH] Authentication error for ', resp.nickName, 'and tenant ', body.auth.tenantId);
                 res.send(401, 'User unathorized for this tenant');
             }
 
