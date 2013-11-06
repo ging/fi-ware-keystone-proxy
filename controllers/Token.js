@@ -298,7 +298,7 @@ var Token = (function() {
 	};
 
 	var validateLog = function(status, service, user, token, msg) {
-		log("VALIDATION", status + ": Service (" + service ") - User (" + user + ") - Token (" + token + ") - " + msg);
+		log("VALIDATION", status + ": Service (" + service + ") - User (" + user + ") - Token (" + token + ") - " + msg);
 	}
 
 	// Token validation
