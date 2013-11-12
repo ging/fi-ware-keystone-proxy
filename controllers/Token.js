@@ -230,10 +230,11 @@ var Token = (function() {
 
         // In this case we will search for the related Access Token, because we received a Keystone token.
         if (accToken !== undefined && tok !== undefined && tok.access_token !== undefined) {
-        	accToken = tok.access_token;
+        	console.log('[TOKEN AUTH] The token was created by Keystone. Related OAuth token: ', tok["access_token"]);
+        	accToken = tok["access_token"];
         }
 
-        IDM.getUserData(body.auth.token.id, function (status, resp) {
+        IDM.getUserData(accToken, function (status, resp) {
 
             var orgs = resp.organizations;
             var myTenant = undefined;
