@@ -218,12 +218,20 @@ var Token = (function() {
         res.send(userInfo);
 	};
 
-	// It creates a token from an OAuth token
+	// It creates a token from an OAuth token. If the OAuth token is not found it will search for a related token.
 	var createTokenFromAccessToken = function(req, res) {
 		// Create token from access_token
     	var body = JSON.parse(req.body);
 
         console.log('[TOKEN AUTH] Checking token for user', body.auth.token.id, 'and tenant ', body.auth.tenantId);
+
+        var accToken = body.auth.token.id;
+        var tok = TokenDB.get(accToken);
+
+        // In this case we will search for the related Access Token, because we received a Keystone token.
+        if (accToken !== undefined && tok !== undefined && tok.access_token !== undefined) {
+        	accToken = tok.access_token;
+        }
 
         IDM.getUserData(body.auth.token.id, function (status, resp) {
 
