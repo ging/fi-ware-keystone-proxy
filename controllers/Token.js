@@ -252,15 +252,15 @@ var Token = (function() {
                 var token = undefined;
 
                 for (var t in TokenDB.list()) {
-                    if (TokenDB.get(t).access_token === body.auth.token.id && TokenDB.get(t).tenant === body.auth.tenantId) {
+                    if (TokenDB.get(t).access_token === accToken && TokenDB.get(t).tenant === body.auth.tenantId) {
                         token = t;
-                        console.log('[TOKEN AUTH] Getting existing token user', body.auth.token.id, 'and tenant ', body.auth.tenantId, 'token: ', token);
+                        console.log('[TOKEN AUTH] Getting existing token user', accToken, 'and tenant ', body.auth.tenantId, 'token: ', token);
                         break;
                     }
                 }
 
                 if (!token) {
-                	token = TokenDB.create(body.auth.token.id, body.auth.tenantId, false, resp.nickName);
+                	token = TokenDB.create(accToken, body.auth.tenantId, false, resp.nickName);
                     console.log('[TOKEN AUTH] Generating new token for user', resp.nickName, 'and tenant ', body.auth.tenantId, 'token: ', token);
                 }
                 //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
