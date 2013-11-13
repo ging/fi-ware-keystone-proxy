@@ -1,5 +1,6 @@
 var IDM = require("../lib/IDM.js").IDM,
 	TokenDB = require("../db/TokenDB.js").TokenDB,
+	TenantMappingDB = require("../db/TenantMappingDB.js").TenantMappingDB,
 	config = require("../config.js");
 
 var Tenant = (function() {
