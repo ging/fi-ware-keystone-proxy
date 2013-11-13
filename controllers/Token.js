@@ -242,7 +242,7 @@ var Token = (function() {
             for (var org in orgs) {
 
                 if (orgs[org].id == body.auth.tenantId) {
-                    myTenant = orgs[org];
+                    myTenant = getKeystoneTenant(orgs[org]);
                     break;
                 }
             }
