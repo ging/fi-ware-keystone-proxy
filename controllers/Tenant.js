@@ -5,6 +5,17 @@ var IDM = require("../lib/IDM.js").IDM,
 
 var Tenant = (function() {
 
+	var pad = function(number, length) {
+
+	    var str = '' + number;
+	    while (str.length < length) {
+	        str = '0' + str;
+	    }
+
+	    return str;
+
+	};
+
 	var getKeystoneTenant = function (tenantId) {
 
 	    if (TenantMappingDB.get(tenantId)) {
