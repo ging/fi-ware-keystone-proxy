@@ -131,7 +131,7 @@ var Token = (function() {
                         for (var org in orgs) {
 
                             if (orgs[org].id == tenantId) {
-                                myTenant = orgs[org];
+                                myTenant = getKeystoneTenant(orgs[org]);
                                 break;
                             }
                         }
@@ -360,7 +360,7 @@ var Token = (function() {
 	                for (var org in orgs) {
 
 	                    if (orgs[org].id == TokenDB.get(req.params.token).tenant) {
-	                        myTenant = orgs[org];
+	                        myTenant = getKeystoneTenant(orgs[org]);
 	                        break;
 	                    }
 	                }
