@@ -4,6 +4,15 @@ var IDM = require("../lib/IDM.js").IDM,
 
 var Tenant = (function() {
 
+	var getKeystoneTenant = function (tenantId) {
+
+	    if (TenantMappingDB.get(tenantId)) {
+	        return TenantMappingDB.get(tenantId);
+	    } else {
+	        return pad(tenantId, 32);
+	    }
+	};
+
 	var list = function(req, res) {
 	    console.log('[GET TENANTS] Get tenants for token: ', req.headers['x-auth-token']);
 
@@ -27,7 +36,7 @@ var Tenant = (function() {
 		                  var org = resp.organizations[orgIdx];
 		                  var tenant = {
 		                    enabled: true,
-		                    id: org.id,
+		                    id: getKeystoneTenant(org.id),
 		                    name: org.name,
 		                    description: org.description
 		                  }
@@ -53,7 +62,7 @@ var Tenant = (function() {
 				    	if (TokenDB.get(req.headers['x-auth-token']).isAdmin) {
 							var tenants = [{
 								enabled: true,
-								id: TokenDB.get(req.headers['x-auth-token']).tenant,
+								id: getKeystoneTenant(TokenDB.get(req.headers['x-auth-token']).tenant),
 								name: TokenDB.get(req.headers['x-auth-token']).tenant,
 								description: "Admin access"
 							}];
