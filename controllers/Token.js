@@ -130,8 +130,8 @@ var Token = (function() {
 
                         for (var org in orgs) {
 
-                            if (orgs[org].id == tenantId) {
-                                myTenant = getKeystoneTenant(orgs[org]);
+                            if (getKeystoneTenant(orgs[org].id) == tenantId) {
+                                myTenant = orgs[org];
                                 break;
                             }
                         }
@@ -241,8 +241,8 @@ var Token = (function() {
 
             for (var org in orgs) {
 
-                if (orgs[org].id == body.auth.tenantId) {
-                    myTenant = getKeystoneTenant(orgs[org]);
+                if (getKeystoneTenant(orgs[org].id) == body.auth.tenantId) {
+                    myTenant = orgs[org];
                     break;
                 }
             }
@@ -359,8 +359,8 @@ var Token = (function() {
 
 	                for (var org in orgs) {
 
-	                    if (orgs[org].id == TokenDB.get(req.params.token).tenant) {
-	                        myTenant = getKeystoneTenant(orgs[org]);
+	                    if (getKeystoneTenant(orgs[org].id) == TokenDB.get(req.params.token).tenant) {
+	                        myTenant = orgs[org];
 	                        break;
 	                    }
 	                }
