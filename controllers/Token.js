@@ -336,13 +336,20 @@ var Token = (function() {
 
     var validateLog = function(status, service, user, token, msg) {
         log("VALIDATION", status + ": Service (" + service + ") - User (" + user + ") - Token (" + token + ") - " + msg);
-    }
+    };
+
+    var retrieveTokens = function(req, res, next) {
+        req.params.token = req.params.token || req.headers['x-subject-token'];
+        if (req.headers['x-subject-token'] !== undefined) {
+            res.setHeader("X-Subject-Token", req.headers['x-subject-token']);
+        }
+        next();
+    };
 
     // Token validation
     var validate = function(req, res) {
         // Validate token
         //console.log('[VALIDATION] Validate user token', req.params.token, 'with auth token ', req.headers['x-auth-token']);
-
         if (TokenDB.get(req.headers['x-auth-token'])) {
             //console.log('[VALIDATION] Authorization OK from service', TokenDB.get(req.headers['x-auth-token']).name);
 
@@ -453,7 +460,8 @@ var Token = (function() {
     return {
         create: create,
         validate: validate,
-        validatePEP: validatePEP
+        validatePEP: validatePEP,
+        retrieveTokens: retrieveTokens
     }
 })();
 
