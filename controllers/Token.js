@@ -1,133 +1,181 @@
 var IDM = require("../lib/IDM.js").IDM,
-	TokenDB = require("../db/TokenDB.js").TokenDB,
-	UsersDB = require("../db/UsersDB.js").UsersDB,
-	TenantMappingDB = require("../db/TenantMappingDB.js").TenantMappingDB,
+    TokenDB = require("../db/TokenDB.js").TokenDB,
+    UsersDB = require("../db/UsersDB.js").UsersDB,
+    TenantMappingDB = require("../db/TenantMappingDB.js").TenantMappingDB,
     xmlParser = require('../xml2json'),
-	config = require("../config.js");
+    config = require("../config.js");
 
 var Token = (function() {
 
-	// Private functions
+    // Private functions
 
-	var pad = function(number, length) {
+    var pad = function(number, length) {
 
-	    var str = '' + number;
-	    while (str.length < length) {
-	        str = '0' + str;
-	    }
+        var str = '' + number;
+        while (str.length < length) {
+            str = '0' + str;
+        }
 
-	    return str;
+        return str;
 
-	};
+    };
 
-	var getCatalogue = function (tenantId) {
-	    return JSON.parse(JSON.stringify(config.serviceCatalog).replace(/\$\(tenant_id\)s/g, tenantId));
-	};
+    var getCatalogue = function (tenantId) {
+        return JSON.parse(JSON.stringify(config.serviceCatalog).replace(/\$\(tenant_id\)s/g, tenantId));
+    };
 
-	var getKeystoneTenant = function (tenantId) {
+    var getKeystoneTenant = function (tenantId) {
+        if (tenantId === undefined) return undefined;
+        if (TenantMappingDB.get(tenantId)) {
+            return TenantMappingDB.get(tenantId);
+        } else {
+            return pad(tenantId, 32);
+        }
+    };
 
-	    if (TenantMappingDB.get(tenantId)) {
-	        return TenantMappingDB.get(tenantId);
-	    } else {
-	        return pad(tenantId, 32);
-	    }
-	};
+    var generateToken = function () {
+        return require('crypto').randomBytes(16).toString('hex');
+    };
 
-	var generateToken = function () {
-	    return require('crypto').randomBytes(16).toString('hex');
-	};
+    var generateAccessResponse = function (token, tenant, user_id, user_name, roles) {
+        if (tenant !== undefined) {
+            tenant.id = getKeystoneTenant(tenant.id);
+        }
 
-	var generateAccessResponse = function (token, tenant, user_id, user_name, roles) {
-	    if (tenant !== undefined) {
-	        tenant.id = getKeystoneTenant(tenant.id);
-	    }
+        return {"access":
+                {
+                "token":
+                {"expires": "2015-07-09T15:16:07Z",
+                "id": token,
+                "tenant": tenant
+                }, 
+                "serviceCatalog": ((tenant!==undefined)?getCatalogue(tenant.id):undefined),
+                "user": {
+                    "username": user_id,
+                    "roles_links": [],
+                    "id": user_id,
+                    "roles": roles,
+                    "name": user_name
+                }
+            }
+        };
+    };
 
-	    return {"access":
-	            {
-	            "token":
-	            {"expires": "2015-07-09T15:16:07Z",
-	            "id": token,
-	            "tenant": tenant
-	            }, 
-	            "serviceCatalog": ((tenant!==undefined)?getCatalogue(tenant.id):undefined),
-	            "user": {
-	                "username": user_id,
-	                "roles_links": [],
-	                "id": user_id,
-	                "roles": roles,
-	                "name": user_name
-	            }
-	        }
-	    };
-	};
+    var generateAccessResponseForXML = function (token, tenant, user_id, user_name, roles) {
+        if (tenant !== undefined) {
+            tenant._id = getKeystoneTenant(tenant._id);
+        }
 
-	var generateAccessResponseForXML = function (token, tenant, user_id, user_name, roles) {
-	    if (tenant !== undefined) {
-	        tenant._id = getKeystoneTenant(tenant._id);
-	    }
+        var newRoles = [];
+        for (var r in roles) {
+            var nr = {"_name": roles[r].name, "_id": roles[r].id};
+            newRoles.push(nr);
+        }
 
-	    var newRoles = [];
-	    for (var r in roles) {
-	        var nr = {"_name": roles[r].name, "_id": roles[r].id};
-	        newRoles.push(nr);
-	    }
+        return {"access":
+                {
+                "_xmlns" : "http://docs.openstack.org/identity/api/v2.0",
+                "token":
+                {"_expires": "2015-07-09T15:16:07Z",
+                "_id": token,
+                "tenant": tenant
+                }, 
+                "serviceCatalog": ((tenant!==undefined)?getCatalogue(tenant.id):undefined),
+                "user": {
+                    "_username": user_id,
+                    "roles_links": [],
+                    "_id": user_id,
+                    "roles": newRoles,
+                    "_name": user_name
+                }
+            }
+        };
+    };
 
-	    return {"access":
-	            {
-	            "_xmlns" : "http://docs.openstack.org/identity/api/v2.0",
-	            "token":
-	            {"_expires": "2015-07-09T15:16:07Z",
-	            "_id": token,
-	            "tenant": tenant
-	            }, 
-	            "serviceCatalog": ((tenant!==undefined)?getCatalogue(tenant.id):undefined),
-	            "user": {
-	                "_username": user_id,
-	                "roles_links": [],
-	                "_id": user_id,
-	                "roles": newRoles,
-	                "_name": user_name
-	            }
-	        }
-	    };
-	};
+    var sendAccessResponse = function(token, tenant, user_id, user_name, roles, req, res, deleteCatalog) {
+        var access = generateAccessResponse(token, tenant, user_id, user_name, roles);
+        if (deleteCatalog === true) {
+            delete access.access['serviceCatalog'];
+        }
+        var userInfo = JSON.stringify(access);
+        
+        res.setHeader("Content-Type", "application/json; charset=utf-8");
+        if (req.headers['accept'] === 'application/xml') {
+            var ten;
+            if (tenant !== undefined) {
+                ten = {"_enabled": true, "_id": tenant.id, "_name": tenant.name};
+            }
+            var resp = generateAccessResponseForXML(token, tenant, user_id, user_name, roles);
+            if (deleteCatalog === true) {
+                delete resp.access['serviceCatalog'];
+            }
+            userInfo = xmlParser.json2xml_str(resp);
+            res.setHeader("Content-Type", "application/xml; charset=utf-8");
+        }
+        res.send(userInfo);
+    };
 
-	// It creates a new Keystone token from username and password.
-	var createTokenFromCredentials = function(req, res) {
-
-        var token = undefined;
-        var tenantId = undefined;
-        var body = JSON.parse(req.body);
-
-        console.log('[CREDENTIALS AUTH] Checking user/pass for user', body.auth.passwordCredentials.username);
-
-        if (body.auth.tenantId !== undefined) {
-        	tenantId = body.auth.tenantId;
+    var getTenantFromBody = function(body) {
+        var tenantId;
+        if (body === undefined || body.auth === undefined) return undefined;
+        if (body.auth.tenant !== undefined && body.auth.tenant.id !== undefined) {
+            tenantId = body.auth.tenant.id;
+        } else if (body.auth.tenantId !== undefined) {
+            tenantId = body.auth.tenantId;
         } else if (body.auth.tenantName !== undefined) {
             tenantId = body.auth.tenantName;
             if (tenantId === config.serviceTenantName) {
-            	tenantId = TenantMappingDB.getFromName(tenantId);
+                tenantId = TenantMappingDB.getFromName(tenantId);
             }
         }
+        return getKeystoneTenant(tenantId);
+    };
 
-        // This case the user is admin
-        var isAdmin = false;
-        // We first look into privileged user list.
-        if (tenantId !== undefined && UsersDB.get(body.auth.passwordCredentials.username).password === body.auth.passwordCredentials.password) {
-            isAdmin = UsersDB.get(body.auth.passwordCredentials.username).isAdmin;
+    // It creates a new Keystone token from username and password.
+    var createTokenFromCredentials = function(req, res) {
+
+        var token = undefined;
+        var body = JSON.parse(req.body);
+        var tenantId = getTenantFromBody(body);
+
+        console.log('[CREDENTIALS AUTH] Checking user/pass for user', body.auth.passwordCredentials.username);
+
+
+        // We first look into privileged user list. They all are admins and will be given access to the desired tenant.
+        if (UsersDB.get(body.auth.passwordCredentials.username).password === body.auth.passwordCredentials.password) {
+            console.log('[CREDENTIALS AUTH] User', body.auth.passwordCredentials.username, 'is on privileged list');
+            
+            var tenant, roles, name;
+            var tenantId;
+            var name = body.auth.passwordCredentials.username;
+
+            // Now we check if the user already owns a token.
+            var token = TokenDB.searchByNameAndTenant(body.auth.passwordCredentials.username, tenantId);
+            if (token === undefined) {
+                // We have to create a new token, because it does not exist in our database.
+                token = TokenDB.create(undefined, tenantId, body.auth.passwordCredentials.username);
+            }
+
+            if (tenantId !== undefined) {
+                // We received a tenantId, so we also add it to the response.
+                tenant = {description: "Tenant", enabled: true, id: tenantId, name: tenantId};
+                roles = [{"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"},
+                        {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}];
+            }
+
+            sendAccessResponse(token, tenant, name, name, roles, req, res);
+            return;
+
         } else if (body.auth.passwordCredentials.username !== undefined && body.auth.passwordCredentials.password !== undefined) {
             // Retrieves OAuth access token from FI-Ware account by sending username/password
             IDM.authenticate(body.auth.passwordCredentials.username, body.auth.passwordCredentials.password, function(status, access_token) {
-                if (body.auth.tenantName !== undefined || (body.auth.tenant !== undefined && body.auth.tenant.id !== undefined)) {
-                    tenantId = body.auth.tenantName ||  body.auth.tenant.id;
-                }
                 // Return with access token. Now we get user info.
                 IDM.getUserData(access_token, function (status, resp) {
                     var orgs = resp.organizations;
                     var myTenant = undefined;
 
                     if (tenantId !== undefined) {
-
+                        // If we received a tenantId we check if the user can access to it.
                         for (var org in orgs) {
 
                             if (getKeystoneTenant(orgs[org].id) == getKeystoneTenant(tenantId)) {
@@ -140,21 +188,21 @@ var Token = (function() {
                             var token = TokenDB.search(access_token, tenantId);
 
                             if (!token) {
-                            	token = TokenDB.create(access_token, tenantId, false, body.auth.passwordCredentials.username);
                                 console.log('[TOKEN AUTH] Generating new token for user', body.auth.passwordCredentials.username, 'and tenant ', tenantId, 'token: ', token);
+                                token = TokenDB.create(access_token, tenantId, body.auth.passwordCredentials.username);
                             }
-                            //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
 
                             var ten = {description: "Tenant from IDM", enabled: true, id: myTenant.id, name: myTenant.name}
-                            var access = generateAccessResponse(token, ten, resp.nickName, resp.displayName, myTenant.roles);
-                            res.send(JSON.stringify(access));
+                            
+                            sendAccessResponse(token, ten, resp.nickName, resp.displayName, myTenant.roles, req, res);
+                            return;
                         } else {
                             console.log('[TOKEN AUTH] Authentication error for ', body.auth.passwordCredentials.username, 'and tenant ', tenantId);
                             res.send(401, 'User unathorized for this tenant');
                         }
                     } else {
-                        var access = generateAccessResponse(access_token, undefined, resp.nickName, resp.displayName, undefined);
-                        res.send(JSON.stringify(access));
+                        // If we don't received it we return the access token as a keystone token.
+                        sendAccessResponse(access_token, undefined, resp.nickName, resp.displayName, undefined, req, res);
                     }
                     
                 }, function (status, e) {
@@ -170,295 +218,243 @@ var Token = (function() {
             }, function(error, msg) {
                 console.log('[VALIDATION] User credentials not authorized');
                 res.send(401, 'User credentials not authorized');
-                return;
             });
             return;
 
         }
-        console.log('[CREDENTIALS AUTH] Tenant ID', tenantId);
+        res.send(401, 'User credentials not authorized');
+        return;
+    };
 
-        tenantId = tenantId || "96d9611e4b514c2a9804376a899103f1";
+    // It creates a token from an OAuth token. If the OAuth token is not found it will search for a related token.
+    var createTokenFromAccessToken = function(req, res) {
+        // Create token from access_token
+        var body = JSON.parse(req.body);
 
-        var tenant = {"description": "Service tenant", "enabled": true, "name": "service", "id": tenantId};
+        var tenantId = getTenantFromBody(body);
 
-        token = TokenDB.search(body.auth.passwordCredentials.username, body.auth.tenantName);
-
-        if (!token) {
-            token = TokenDB.create(undefined, tenantId, isAdmin, body.auth.passwordCredentials.username);
-            console.log('[CREDENTIALS AUTH] Generating new token for user', body.auth.passwordCredentials.username, 'token: ', token);
-        }
-
-        var resp = generateAccessResponse(
-            token, 
-            tenant, 
-            "91c72f314d93470b90a7c1ba21d7e352", 
-            body.auth.passwordCredentials.username, 
-            [{"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"},
-             {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}
-            ]);
-
-        var userInfo = JSON.stringify(resp);
-        res.setHeader("Content-Type", "application/json; charset=utf-8");
-        if (req.headers['accept'] === 'application/xml') {
-
-            var ten = {"_enabled": true, "_id": tenantId, "_name": "service"};
-            var resp = generateAccessResponseForXML(
-                token, 
-                ten, 
-                "91c72f314d93470b90a7c1ba21d7e352", 
-                body.auth.passwordCredentials.username, 
-                [{"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"},
-                 {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}
-                ]);
-
-
-            userInfo = xmlParser.json2xml_str(resp);
-            res.setHeader("Content-Type", "application/xml; charset=utf-8");
-        }
-        res.send(userInfo);
-	};
-
-	// It creates a token from an OAuth token. If the OAuth token is not found it will search for a related token.
-	var createTokenFromAccessToken = function(req, res) {
-		// Create token from access_token
-    	var body = JSON.parse(req.body);
-
-        console.log('[TOKEN AUTH] Checking token for user', body.auth.token.id, 'and tenant ', body.auth.tenantId);
+        console.log('[TOKEN AUTH] Checking token', body.auth.token.id, 'and tenant ', tenantId);
 
         var accToken = body.auth.token.id;
         var tok = TokenDB.get(accToken);
 
-        // In this case we will search for the related Access Token, because we received a Keystone token.
-        if (accToken !== undefined && tok !== undefined && tok.access_token !== undefined) {
-        	console.log('[TOKEN AUTH] The token was created by Keystone. Related OAuth token: ', tok["access_token"]);
-        	accToken = tok["access_token"];
+        if (accToken !== undefined && tok !== undefined && tok.access_token === undefined) {
+            // In this case we will search for the related Access Token, because we received a Keystone token.
+            console.log('[TOKEN AUTH] The token was created by Keystone. Related OAuth token: ', tok["access_token"]);
+            accToken = tok["access_token"];
         }
 
-        IDM.getUserData(accToken, function (status, resp) {
+        if (tok !== undefined && accToken === undefined) {
+            // This token was not created from IDM. The user belongs to the privileged list.
+            var token = TokenDB.searchByNameAndTenant(tok.name, tenantId);
 
-            var orgs = resp.organizations;
-            var myTenant = undefined;
-
-            for (var org in orgs) {
-
-                if (getKeystoneTenant(orgs[org].id) == getKeystoneTenant(body.auth.tenantId)) {
-                    myTenant = orgs[org];
-                    break;
-                }
+            if (token === undefined) {
+                // The desired token does not exist in Database. We create a new one.
+                token = TokenDB.create(undefined, tenantId, tok.name);
+                console.log('[TOKEN AUTH] Generating new token for user', tok.name, 'and tenant ', tenantId, 'token: ', token);
             }
 
-            if (myTenant) {
+            var roles = [{"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"},
+                                {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}];
 
-                var token = undefined;
+            var ten = {description: "Tenant from IDM", enabled: true, id: tenantId, name: tenantId};
+            sendAccessResponse(token, ten, tok.name, tok.name, roles, req, res);
 
-                for (var t in TokenDB.list()) {
-                    if (TokenDB.get(t).access_token === accToken && TokenDB.get(t).tenant === body.auth.tenantId) {
-                        token = t;
-                        console.log('[TOKEN AUTH] Getting existing token user', accToken, 'and tenant ', body.auth.tenantId, 'token: ', token);
+        } else {
+            // This token can be retrieved from IDM.
+            IDM.getUserData(accToken, function (status, resp) {
+
+                var orgs = resp.organizations;
+                var myTenant = undefined;
+
+                for (var org in orgs) {
+
+                    if (getKeystoneTenant(orgs[org].id) == getKeystoneTenant(tenantId)) {
+                        myTenant = orgs[org];
                         break;
                     }
                 }
 
-                if (!token) {
-                	token = TokenDB.create(accToken, body.auth.tenantId, false, resp.nickName);
-                    console.log('[TOKEN AUTH] Generating new token for user', resp.nickName, 'and tenant ', body.auth.tenantId, 'token: ', token);
+                if (myTenant) {
+
+                    var token = undefined;
+
+                    for (var t in TokenDB.list()) {
+                        if (TokenDB.get(t).access_token === accToken && TokenDB.get(t).tenant === tenantId) {
+                            token = t;
+                            console.log('[TOKEN AUTH] Getting existing token user', accToken, 'and tenant ', tenantId, 'token: ', token);
+                            break;
+                        }
+                    }
+
+                    if (!token) {
+                        token = TokenDB.create(accToken, tenantId, resp.nickName);
+                        console.log('[TOKEN AUTH] Generating new token for user', resp.nickName, 'and tenant ', tenantId, 'token: ', token);
+                    }
+                    //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
+
+                    var ten = {description: "Tenant from IDM", enabled: true, id: myTenant.id, name: myTenant.name}
+                    sendAccessResponse(token, ten, resp.nickName, resp.displayName, myTenant.roles, req, res);
+                } else {
+                    console.log('[TOKEN AUTH] Authentication error for ', resp.nickName, 'and tenant ', tenantId);
+                    res.send(401, 'User unathorized for this tenant');
                 }
-                //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
-
-                var ten = {description: "Tenant from IDM", enabled: true, id: myTenant.id, name: myTenant.name}
-                var access = generateAccessResponse(token, ten, resp.nickName, resp.displayName, myTenant.roles);
-
-                res.send(JSON.stringify(access));
-            } else {
-                console.log('[TOKEN AUTH] Authentication error for ', resp.nickName, 'and tenant ', body.auth.tenantId);
-                res.send(401, 'User unathorized for this tenant');
-            }
 
 
-        }, function (status, e) {
-            if (status === 401) {
-                console.log('[VALIDATION] User token not authorized');
-                res.send(401, 'User token not authorized');
-            } else {
-                console.log('[VALIDATION] Error in IDM communication ', e);
-                res.send(503, 'Error in IDM communication');
-            }
-        });
-	};
+            }, function (status, e) {
+                if (status === 401) {
+                    console.log('[VALIDATION] User token not authorized');
+                    res.send(401, 'User token not authorized');
+                } else {
+                    console.log('[VALIDATION] Error in IDM communication ', e);
+                    res.send(503, 'Error in IDM communication');
+                }
+            });
+        }
 
-	// Public functions
+    };
 
-	// Token creation from username/password or from OAuth tokens
-	var create = function(req, resp) {
+    // Public functions
 
-		var body = JSON.parse(req.body);
+    // Token creation from username/password or from OAuth tokens
+    var create = function(req, resp) {
+
+        var body = JSON.parse(req.body);
         
         if (body.auth.passwordCredentials !== undefined) {
-        	// Create token from password credentials
-        	createTokenFromCredentials(req, resp);
+            // Create token from password credentials
+            createTokenFromCredentials(req, resp);
         } else {
-        	// Create token from OAuth access token
-        	createTokenFromAccessToken(req, resp);
+            // Create token from OAuth access token
+            createTokenFromAccessToken(req, resp);
         }
-	};
+    };
 
-	var log = function(type, data) {
-		console.log("[", type, "] ", data);
-	};
+    var log = function(type, data) {
+        console.log("[", type, "] ", data);
+    };
 
-	var validateLog = function(status, service, user, token, msg) {
-		log("VALIDATION", status + ": Service (" + service + ") - User (" + user + ") - Token (" + token + ") - " + msg);
-	}
+    var validateLog = function(status, service, user, token, msg) {
+        log("VALIDATION", status + ": Service (" + service + ") - User (" + user + ") - Token (" + token + ") - " + msg);
+    }
 
-	// Token validation
-	var validate = function(req, res) {
-	    // Validate token
-	    //console.log('[VALIDATION] Validate user token', req.params.token, 'with auth token ', req.headers['x-auth-token']);
+    // Token validation
+    var validate = function(req, res) {
+        // Validate token
+        //console.log('[VALIDATION] Validate user token', req.params.token, 'with auth token ', req.headers['x-auth-token']);
 
-	    if (TokenDB.get(req.headers['x-auth-token'])) {
-	        //console.log('[VALIDATION] Authorization OK from service', TokenDB.get(req.headers['x-auth-token']).name);
+        if (TokenDB.get(req.headers['x-auth-token'])) {
+            //console.log('[VALIDATION] Authorization OK from service', TokenDB.get(req.headers['x-auth-token']).name);
 
-	        var success = false;
+            var success = false;
 
-	        if (TokenDB.get(req.params.token) && TokenDB.get(req.params.token).access_token === undefined) {
+            if (TokenDB.get(req.params.token) && TokenDB.get(req.params.token).access_token === undefined) {
 
-	        	// Is a token from the privileged user list
-	        	validateLog("Success", TokenDB.get(req.headers['x-auth-token']).name, TokenDB.get(req.params.token).name, req.params.token, "");
+                // Is a token from the privileged user list
+                validateLog("Success", TokenDB.get(req.headers['x-auth-token']).name, TokenDB.get(req.params.token).name, req.params.token, "");
 
-	            var token = req.params.token;
+                var token = req.params.token;
 
-	            var roles = [
-	                {"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"},
-	                {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}
-	            ];
-	            var tenant = {"description": "tenant", "enabled": true, "name": "tenant " + TokenDB.get(token).tenant, "id": TokenDB.get(token).tenant};
-	            var access = generateAccessResponse(token, tenant, "admin", "admin", roles);
-	            delete access.access['serviceCatalog'];
-	            var userInfo = JSON.stringify(access);
-	            res.setHeader("Content-Type", "application/json; charset=utf-8");
-	            if (req.headers['accept'] === 'application/xml') {
-	                ten = {"_enabled": true, "_id": myTenant.id, "_name": myTenant.name};
-	                access = generateAccessResponseForXML(token, ten, "admin", "admin", roles);
-	                delete access.access['serviceCatalog'];
+                var roles = [
+                    {"id": "8db87ccbca3b4d1ba4814c3bb0d63aaf", "name": "Member"},
+                    {"id": "09e95db0ea3f4495a64e95bfc64b0c56", "name": "admin"}
+                ];
+                var tenant = {"description": "tenant", "enabled": true, "name": "tenant " + TokenDB.get(token).tenant, "id": TokenDB.get(token).tenant};
+                sendAccessResponse(token, tenant, "admin", "admin", roles, req, res, true);
 
-	                userInfo = xmlParser.json2xml_str(access);
-	                res.setHeader("Content-Type", "application/xml; charset=utf-8");
-	            }
+            } else if(TokenDB.get(req.params.token)) {
 
-	            //console.log("[VALIDATION] User info: ", userInfo);
+                // Is a token obtained from OAuth access token
+                IDM.getUserData(TokenDB.get(req.params.token).access_token, function (status, resp) {
 
-	            res.send(userInfo);
+                    var orgs = resp.organizations;
+                    var myTenant = undefined;
 
-	        } else if(TokenDB.get(req.params.token)) {
+                    for (var org in orgs) {
 
-	        	// Is a token obtained from OAuth access token
-	            IDM.getUserData(TokenDB.get(req.params.token).access_token, function (status, resp) {
+                        if (getKeystoneTenant(orgs[org].id) == getKeystoneTenant(TokenDB.get(req.params.token).tenant)) {
+                            myTenant = orgs[org];
+                            break;
+                        }
+                    }
+                    //console.log("[VALIDATION] Tenant ", myTenant);
 
-	                var orgs = resp.organizations;
-	                var myTenant = undefined;
-
-	                for (var org in orgs) {
-
-	                    if (getKeystoneTenant(orgs[org].id) == getKeystoneTenant(TokenDB.get(req.params.token).tenant)) {
-	                        myTenant = orgs[org];
-	                        break;
-	                    }
-	                }
-	                //console.log("[VALIDATION] Tenant ", myTenant);
-
-	                if (myTenant) {
-	                    //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
-	                    var ten = {description: "Tenant from IDM", enabled: true, id: myTenant.id, name: myTenant.name};
-	                    var access = generateAccessResponse(req.params.token, ten, resp.nickName, resp.displayName, myTenant.roles);
-
-	                    delete access.access['serviceCatalog'];
-	                    validateLog("Success", TokenDB.get(req.headers['x-auth-token']).name, resp.nickName, req.params.token, "");
-	                    //console.log('[VALIDATION] User token OK for user', resp.nickName);
-
-	                    var userInfo = JSON.stringify(access);
-	                    res.setHeader("Content-Type", "application/json; charset=utf-8");
-	                    if (req.headers['accept'] === 'application/xml') {
-	                        ten = {"_enabled": true, "_id": myTenant.id, "_name": myTenant.name};
-	                        access = generateAccessResponseForXML(req.params.token, ten, resp.nickName, resp.displayName, myTenant.roles);
-	                        delete access.access['serviceCatalog'];
-
-	                        userInfo = xmlParser.json2xml_str(access);
-	                        res.setHeader("Content-Type", "application/xml; charset=utf-8");
-	                    }
-
-	                    //console.log("[VALIDATION] User info: ", userInfo);
-
-	                    res.send(userInfo);
-	                } else {
-	                    validateLog("Error", TokenDB.get(req.headers['x-auth-token']).name, undefined, req.params.token, "User Token not authorized");
-	                    res.send(404, 'User token not authorized');
-	                }
+                    if (myTenant) {
+                        //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
+                        var ten = {description: "Tenant from IDM", enabled: true, id: myTenant.id, name: myTenant.name};
+                        validateLog("Success", TokenDB.get(req.headers['x-auth-token']).name, resp.nickName, req.params.token, "");
+                        sendAccessResponse(req.params.token, ten, resp.nickName, resp.displayName, myTenant.roles, req, res, true);
+                        
+                    } else {
+                        validateLog("Error", TokenDB.get(req.headers['x-auth-token']).name, undefined, req.params.token, "User Token not authorized");
+                        res.send(404, 'User token not authorized');
+                    }
 
 
-	            }, function (status, e) {
-	                if (status === 401) {
-	                    delete TokenDB.get(req.params.token);
-	                    validateLog("Error", TokenDB.get(req.headers['x-auth-token']).name, undefined, req.params.token, "OAuth token not found in IDM");
-	                    res.send(404, 'User token not authorized');
-	                } else {
-	                    validateLog("Error", TokenDB.get(req.headers['x-auth-token']).name, undefined, req.params.token, "Error in IDM communication");
-	                    res.send(503, 'Error in IDM communication');
-	                }
+                }, function (status, e) {
+                    if (status === 401) {
+                        delete TokenDB.get(req.params.token);
+                        validateLog("Error", TokenDB.get(req.headers['x-auth-token']).name, undefined, req.params.token, "OAuth token not found in IDM");
+                        res.send(404, 'User token not authorized');
+                    } else {
+                        validateLog("Error", TokenDB.get(req.headers['x-auth-token']).name, undefined, req.params.token, "Error in IDM communication");
+                        res.send(503, 'Error in IDM communication');
+                    }
 
-	            });
+                });
 
-	        } else {
-	        	validateLog("Error", TokenDB.get(req.headers['x-auth-token']).name, undefined, req.params.token, "User Token not found");
-	            res.send(404, 'User token not found');
-	        }
-	    } else {
-	        validateLog("Error", undefined, undefined, req.headers['x-auth-token'], "Service unauthorized");
-	        res.send(401, 'Service not authorized');
-	    }
-	};
+            } else {
+                validateLog("Error", TokenDB.get(req.headers['x-auth-token']).name, undefined, req.params.token, "User Token not found");
+                res.send(404, 'User token not found');
+            }
+        } else {
+            validateLog("Error", undefined, undefined, req.headers['x-auth-token'], "Service unauthorized");
+            res.send(401, 'Service not authorized');
+        }
+    };
 
-	var validatePEP = function(req, res) {
-		// Validate token
-	    console.log('[VALIDATION] Validate user access-token', req.params.token, 'with auth token ', req.headers['x-auth-token']);
+    var validatePEP = function(req, res) {
+        // Validate token
+        console.log('[VALIDATION] Validate user access-token', req.params.token, 'with auth token ', req.headers['x-auth-token']);
 
-	    if (TokenDB.get(req.headers['x-auth-token'])) {
-	        console.log('[VALIDATION] Authorization OK from PEP proxy ', TokenDB.get(req.headers['x-auth-token']).access_token);
+        if (TokenDB.get(req.headers['x-auth-token'])) {
+            console.log('[VALIDATION] Authorization OK from PEP proxy ', TokenDB.get(req.headers['x-auth-token']).access_token);
 
-	        IDM.getUserData(req.params.token, function (status, resp) {
+            IDM.getUserData(req.params.token, function (status, resp) {
 
-	            console.log('[VALIDATION] User access-token OK');
+                console.log('[VALIDATION] User access-token OK');
 
-	            var userInfo = JSON.stringify(resp);
+                var userInfo = JSON.stringify(resp);
 
-	            if (req.headers['accept'] === 'application/xml') {
-	                userInfo = xmlParser.json2xml_str(resp);
-	            }
-	            //console.log("Response: ", userInfo);
-	            res.send(userInfo);
+                if (req.headers['accept'] === 'application/xml') {
+                    userInfo = xmlParser.json2xml_str(resp);
+                }
+                //console.log("Response: ", userInfo);
+                res.send(userInfo);
 
-	        }, function (status, e) {
-	            if (status === 200) {
-	                res.send(200, "{}");
-	            } else if (status === 401) {
-	                console.log('[VALIDATION] User token not authorized');
-	                res.send(404, 'User token not authorized');
-	            } else {
-	                console.log('[VALIDATION] Error in IDM communication ', e);
-	                res.send(503, 'Error in IDM communication');
-	            }
-	        });
+            }, function (status, e) {
+                if (status === 200) {
+                    res.send(200, "{}");
+                } else if (status === 401) {
+                    console.log('[VALIDATION] User token not authorized');
+                    res.send(404, 'User token not authorized');
+                } else {
+                    console.log('[VALIDATION] Error in IDM communication ', e);
+                    res.send(503, 'Error in IDM communication');
+                }
+            });
 
 
-	    } else {
-	        console.log('[VALIDATION] Service unauthorized');
-	        res.send(401, 'Service not authorized');
-	    }
-	};
-	return {
-		create: create,
-		validate: validate,
-		validatePEP: validatePEP
-	}
+        } else {
+            console.log('[VALIDATION] Service unauthorized');
+            res.send(401, 'Service not authorized');
+        }
+    };
+    return {
+        create: create,
+        validate: validate,
+        validatePEP: validatePEP
+    }
 })();
 
 exports.Token = Token;
