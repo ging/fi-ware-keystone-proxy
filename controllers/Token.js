@@ -63,7 +63,7 @@ var Token = (function() {
 
     var generateAccessResponseForXML = function (token, tenant, user_id, user_name, roles) {
         if (tenant !== undefined) {
-            tenant._id = getKeystoneTenant(tenant._id);
+            tenant._id = getKeystoneTenant(tenant.id);
         }
 
         var newRoles = [];
