@@ -62,10 +62,6 @@ var Token = (function() {
     };
 
     var generateAccessResponseForXML = function (token, tenant, user_id, user_name, roles) {
-        if (tenant !== undefined) {
-            tenant._id = getKeystoneTenant(tenant.id);
-        }
-
         var newRoles = [];
         for (var r in roles) {
             var nr = {"_name": roles[r].name, "_id": roles[r].id};
@@ -105,7 +101,7 @@ var Token = (function() {
             if (tenant !== undefined) {
                 ten = {"_enabled": true, "_id": tenant.id, "_name": tenant.name};
             }
-            var resp = generateAccessResponseForXML(token, tenant, user_id, user_name, roles);
+            var resp = generateAccessResponseForXML(token, ten, user_id, user_name, roles);
             if (deleteCatalog === true) {
                 delete resp.access['serviceCatalog'];
             }
