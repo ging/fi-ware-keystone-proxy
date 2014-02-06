@@ -2,7 +2,7 @@ var config = {};
 
 config.adminUsers = {"user": {password: "pass", isAdmin: "false"}};
 
-config.accountServer = 'account.lab.fi-ware.eu';
+config.accountServer = 'account.lab.fi-ware.org';
 
 // OAUTH Cloud credentials in the Account server
 config.client_id = '';
@@ -24,10 +24,10 @@ config.db = undefined;
 config.serviceCatalog = [
     {"endpoints":
         [
-        {"adminURL": "http://cloud.lab.fi-ware.eu:8774/v2/$(tenant_id)s",
+        {"adminURL": "http://cloud.lab.fi-ware.org:8774/v2/$(tenant_id)s",
         "region": "RegionOne",
-        "internalURL": "http://cloud.lab.fi-ware.eu:8774/v2/$(tenant_id)s",
-        "publicURL": "http://cloud.lab.fi-ware.eu:8774/v2/$(tenant_id)s"}
+        "internalURL": "http://cloud.lab.fi-ware.org:8774/v2/$(tenant_id)s",
+        "publicURL": "http://cloud.lab.fi-ware.org:8774/v2/$(tenant_id)s"}
         ],
         "endpoints_links": [],
         "type": "compute",
@@ -46,10 +46,10 @@ config.serviceCatalog = [
         "name": "glance"
     },
     {"endpoints": [
-        {"adminURL": "http://cloud.lab.fi-ware.eu:8776/v1/$(tenant_id)s",
+        {"adminURL": "http://cloud.lab.fi-ware.org:8776/v1/$(tenant_id)s",
         "region": "RegionOne",
-        "internalURL": "http://cloud.lab.fi-ware.eu:8776/v1/$(tenant_id)s",
-        "publicURL": "http://cloud.lab.fi-ware.eu:8776/v1/$(tenant_id)s"
+        "internalURL": "http://cloud.lab.fi-ware.org:8776/v1/$(tenant_id)s",
+        "publicURL": "http://cloud.lab.fi-ware.org:8776/v1/$(tenant_id)s"
         }
         ],
         "endpoints_links": [],
