@@ -80,5 +80,6 @@ config.serviceCatalog = [
     }
 ];
 
+config.time_stats_logger = true;
 
 module.exports = config;
