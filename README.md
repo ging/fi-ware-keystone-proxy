@@ -7,7 +7,7 @@ Keystone implementation for OAuth2 compatibility in FI-WARE
 
 	+ nodejs 
 	+ npm
-	Note: Both can be installed from (http://nodejs.org/download/)
+	+ Note: Both can be installed from (http://nodejs.org/download/)
 	+ mysql
 	
 - Clone repository:
