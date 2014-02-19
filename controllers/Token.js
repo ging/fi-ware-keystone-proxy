@@ -225,9 +225,10 @@ var Token = (function() {
             });
             return;
 
+        } else {
+            res.send(401, 'User credentials not authorized');
+            return;
         }
-        res.send(401, 'User credentials not authorized');
-        return;
     };
 
     // It creates a token from an OAuth token. If the OAuth token is not found it will search for a related token.
@@ -439,8 +440,6 @@ var Token = (function() {
                 validateLog("Error", undefined, undefined, req.headers['x-auth-token'], "Service unauthorized");
                 res.send(401, 'Service not authorized');
             }
-
-
         });
     };
 

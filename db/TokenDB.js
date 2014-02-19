@@ -32,7 +32,7 @@ var TokenDB = (function() {
         });
     };
 
-    var set = function(token, tenant, name, access_token, callback) {
+    var set = function(token, access_token, tenant, name, callback) {
         var q = 'INSERT INTO token (token, tenant, name, access_token) VALUES (' + 
             connection.escape(token) + ', ' + 
             connection.escape(tenant) + ', ' + 
