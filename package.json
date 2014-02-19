@@ -5,5 +5,8 @@
   "dependencies": {
     "express": "3.x",
     "mysql": "2.0.0-alpha9"
+  },
+  "scripts": {
+    "postinstall": "node populate_db.js"
   }
 }

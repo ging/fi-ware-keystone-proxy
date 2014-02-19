@@ -1,29 +1,21 @@
 var config = require("../config.js");
+var connection = require("./Connection.js").Connection;
 
 var TenantMappingDB = (function() {
 	var tenantsMapping = {};
 
-	if (config.db) {
-
-	    var mysql = require('mysql');
-	    var connection = mysql.createConnection(config.db);
-
-	    connection.connect();
+	if (config.tenant_maping_required) {
 
 	    connection.query('SELECT * FROM tenant', function(err, rows, fields) {
-	      if (err) throw err;
+			if (err) throw err;
 
-	      for (var i in rows) {
-	        if (rows[i].idm_id !== null) {
-	            tenantsMapping[rows[i].idm_id] = {id:rows[i].id, name: rows[i].name};
-	        }
-	      }
-
-	      console.log('VA : ', tenantsMapping);
-	      
+			for (var i in rows) {
+				if (rows[i].idm_id !== null) {
+				    tenantsMapping[rows[i].idm_id] = {id:rows[i].id, name: rows[i].name};
+				}
+			}
+			console.log('Tenant Mapping : ', tenantsMapping);
 	    });
-
-	    connection.end();
 	}
 	
 	var list = function() {

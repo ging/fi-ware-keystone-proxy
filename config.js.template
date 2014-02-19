@@ -10,16 +10,15 @@ config.client_secret = '';
 
 config.serviceTenantName = "";
 
-// If db not necessary:
-config.db = undefined;
+//Mysql db config:
+config.db = {
+    host     : 'localhost',
+    user     : '',
+    password : '',
+    database : 'keystone_proxy'
+};
 
-// If db necessary:
-// config.db = {
-//   	host     : 'localhost',
-//   	user     : '',
-//   	password : '',
-//   	database : ''
-// };
+config.tenant_maping_required = false;
 
 config.serviceCatalog = [
     {"endpoints":

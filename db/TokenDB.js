@@ -1,51 +1,87 @@
+var connection = require("./Connection.js").Connection;
+
 var TokenDB = (function() {
-    var authDataBase = {};
 
     var generateToken = function () {
         return require('crypto').randomBytes(16).toString('hex');
     };
 
-    var create = function(access_token, tenant, name) {
+    var create = function(access_token, tenant, name, callback) {
         var token = generateToken();
         console.log("Saving token", token, "with access_token", access_token, "with tenant", tenant, "and name", name);
-        set(token, {token: token, access_token: access_token, tenant: tenant, name: name});
-        return token;
+        set(token, access_token, tenant, name, callback);
     };
     
-    var list = function() {
-        return authDataBase;
+    var list = function(callback) {
+        var q = 'SELECT * FROM token';
+        connection.query(q, function(err, rows, fields) {
+            if (err) callback(undefined);
+            var result = {};
+            for (var r in rows) {
+                result[rows[r].token] = rows[r];
+            }
+            callback(result);
+        });
     }
 
-    var get = function(item) {
-        return authDataBase[item];
+    var get = function(item, callback) {
+        var q = 'SELECT * FROM token WHERE token = ' + connection.escape(item);
+        connection.query(q, function(err, rows, fields) {
+            if (err) callback(undefined);
+            callback(rows[0]);
+        });
     };
 
-    var set = function(item, data) {
-        authDataBase[item] = data;
+    var set = function(token, tenant, name, access_token, callback) {
+        var q = 'INSERT INTO token (token, tenant, name, access_token) VALUES (' + 
+            connection.escape(token) + ', ' + 
+            connection.escape(tenant) + ', ' + 
+            connection.escape(name) + ', ' + 
+            connection.escape(access_token) + ')';
+
+        connection.query(q, function(err, rows, fields) {
+            if (err) callback(undefined);
+            callback(token);
+        });
     };
 
-    var search = function(access_token, tenant) {
+    var remove = function(token, callback) {
+        var q = 'DELETE FROM token WHERE token = ' + connection.escape(token);
+
+        connection.query(q, function(err, rows, fields) {
+            if (err) callback(undefined);
+            callback();
+        });
+    };
+
+    var search = function(access_token, tenant, callback) {
         var token;
-        for (var t in list()) {
-            if (get(t).access_token === access_token && get(t).tenant === tenantId) {
-                token = t;
-                console.log('[TOKEN AUTH] Getting existing token user', access_token, 'and tenant ', tenantId, 'token: ', token);
-                break;
+        list(function (token_list) {
+            for (var t in token_list) {
+                if (token_list[t].access_token === access_token && token_list[t].tenant === tenant) {
+                    token = t;
+                    console.log('[TOKEN AUTH] Getting existing token user', access_token, 'and tenant ', tenant, 'token: ', token);
+                    callback(token);
+                    return;
+                }
             }
-        }
-        return token;
+            callback(undefined);
+        });
     };
 
-    var searchByNameAndTenant = function(name, tenant) {
+    var searchByNameAndTenant = function(name, tenant, callback) {
         var token;
-        for (var t in list()) {
-            if (get(t).name === name && get(t).tenant === tenant) {
-                token = t;
-                console.log('[TOKEN AUTH] Getting existing token user', name, 'and tenant ', tenant, 'token: ', token);
-                break;
+        list(function (token_list) {
+            for (var t in token_list) {
+                if (token_list[t].name === name && token_list[t].tenant === tenant) {
+                    token = t;
+                    console.log('[TOKEN AUTH] Getting existing token user', name, 'and tenant ', tenant, 'token: ', token);
+                    callback(token);
+                    return;
+                }
             }
-        }
-        return token;
+            callback(undefined);
+        });
     };
 
     return {
@@ -54,7 +90,8 @@ var TokenDB = (function() {
         set: set,
         list: list,
         search: search,
-        searchByNameAndTenant: searchByNameAndTenant
+        searchByNameAndTenant: searchByNameAndTenant,
+        remove: remove
     }
 })();
 
