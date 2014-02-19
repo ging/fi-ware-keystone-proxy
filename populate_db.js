@@ -2,9 +2,9 @@ var config = require("./config.js");
 var mysql = require('mysql');
 
 var connection = mysql.createConnection({
-  	host     : 'localhost',
-  	user     : 'root',
-  	password : 'root'
+  	host     : config.db.host,
+  	user     : config.db.user,
+  	password : config.db.password
 });
 
 console.log('--- Checking mysql data schemas ---');
