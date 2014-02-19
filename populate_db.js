@@ -26,7 +26,7 @@ connection.query('SHOW DATABASES LIKE "keystone_proxy"', function(err, rows, fie
 
 				console.log('- Database changed to keystone_proxy');
 
-				connection.query('CREATE TABLE token (token VARCHAR(64) not null primary key,tenant VARCHAR(64),name VARCHAR(128), access_token VARCHAR(128))', function(err, rows, fields) {
+				connection.query('CREATE TABLE token (token VARCHAR(64) not null primary key,tenant VARCHAR(64),name VARCHAR(128), access_token VARCHAR(128), expires DATETIME)', function(err, rows, fields) {
 					if (err) throw err;
 
 					console.log('- Table token created');

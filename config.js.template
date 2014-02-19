@@ -19,6 +19,8 @@ config.db = {
 };
 
 config.tenant_maping_required = false;
+//Expiration time in minutes
+config.token_expiration_time = 1440;
 
 config.serviceCatalog = [
     {"endpoints":

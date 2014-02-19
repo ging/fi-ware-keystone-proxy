@@ -1,4 +1,5 @@
 var connection = require("./Connection.js").Connection;
+var exp_time = require("./../config.js").token_expiration_time;
 
 var TokenDB = (function() {
 
@@ -8,8 +9,9 @@ var TokenDB = (function() {
 
     var create = function(access_token, tenant, name, callback) {
         var token = generateToken();
-        console.log("Saving token", token, "with access_token", access_token, "with tenant", tenant, "and name", name);
-        set(token, access_token, tenant, name, callback);
+        var expires = new Date((new Date()).getTime() + exp_time*60*1000);
+        console.log("Saving token", token, "with access_token", access_token, "with tenant", tenant, "and name", name, 'expires', expires);
+        set(token, access_token, tenant, name, expires, callback);
     };
     
     var list = function(callback) {
@@ -32,12 +34,14 @@ var TokenDB = (function() {
         });
     };
 
-    var set = function(token, access_token, tenant, name, callback) {
-        var q = 'INSERT INTO token (token, tenant, name, access_token) VALUES (' + 
+    var set = function(token, access_token, tenant, name, expires, callback) {
+        var q = 'INSERT INTO token (token, tenant, name, access_token, expires) VALUES (' + 
             connection.escape(token) + ', ' + 
             connection.escape(tenant) + ', ' + 
             connection.escape(name) + ', ' + 
-            connection.escape(access_token) + ')';
+            connection.escape(access_token) + ', ' +
+            connection.escape(expires) + 
+            ')';
 
         connection.query(q, function(err, rows, fields) {
             if (err) callback(undefined);
@@ -51,6 +55,16 @@ var TokenDB = (function() {
         connection.query(q, function(err, rows, fields) {
             if (err) callback(undefined);
             callback();
+        });
+    };
+
+    var removeOldTokens = function() {
+        list(function (list) {
+            for (var l in list) {
+                if ((new Date()).getTime() > list[l].expires.getTime()) {
+                    remove(l, function() {});
+                }
+            }
         });
     };
 
@@ -83,6 +97,8 @@ var TokenDB = (function() {
             callback(undefined);
         });
     };
+
+    setInterval(removeOldTokens, 2000);
 
     return {
         create: create,
