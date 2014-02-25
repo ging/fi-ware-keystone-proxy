@@ -122,7 +122,11 @@ var Token = (function() {
             tenantId = body.auth.tenantName;
             if (tenantId === config.serviceTenantName) {
                 tenantId = TenantMappingDB.getFromName(tenantId);
+                if (tenantId === undefined) {
+                    tenantId = body.auth.tenantName;
+                }
             }
+
         }
         return getKeystoneTenant(tenantId);
     };
@@ -142,8 +146,9 @@ var Token = (function() {
             console.log('[CREDENTIALS AUTH] User', body.auth.passwordCredentials.username, 'is on privileged list');
             
             var tenant, roles, name;
-            var tenantId;
             var name = body.auth.passwordCredentials.username;
+
+            console.log(tenantId);
 
             if (tenantId !== undefined) {
                 // We received a tenantId, so we also add it to the response.
