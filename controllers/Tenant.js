@@ -38,7 +38,8 @@ var Tenant = (function() {
 		    if (oauth_token === undefined) {
 		    	oauth_token = req.headers['x-auth-token'];
 		    }
-
+		    console.log("tok", tok, "oauth_token", oauth_token);
+		    
 		    if (oauth_token) {
 		        IDM.getUserData(oauth_token, function (status, resp) {
 
@@ -84,7 +85,7 @@ var Tenant = (function() {
 					    		res.send(200, '{"tenants": []}');
 					    	}
 					    } else {
-					    	console.log('[GET TENANTS] User token not authorized');
+					    	console.log('[GET TENANTS] User token not authorized 1');
 			            res.send(401, 'User token not authorized');	
 					    }
 			            
@@ -94,7 +95,7 @@ var Tenant = (function() {
 			        }
 			    });
 		    } else {
-		    	console.log('[GET TENANTS] User token not authorized');
+		    	console.log('[GET TENANTS] User token not authorized 2');
 			    res.send(401, 'User token not authorized');
 		    }
 

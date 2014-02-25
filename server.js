@@ -4,7 +4,8 @@ var express = require('express'),
     config = require('./config.js'),
     Index = require('./controllers/Index').Index,
     Token = require('./controllers/Token').Token,
-    Tenant = require('./controllers/Tenant').Tenant;
+    Tenant = require('./controllers/Tenant').Tenant
+    Endpoints = require('./controllers/Endpoints').Endpoints;
 
 //{token: {access_token: (service_name), tenant: }}
 
@@ -44,6 +45,10 @@ adminAPI.get('/v2.0/tokens/:token', Token.retrieveTokens, Token.validate);
 clientAPI.get('/v2.0/tokens/:token', Token.retrieveTokens, Token.validate);
 adminAPI.get('/v3/auth/tokens', Token.retrieveTokens, Token.validate);
 clientAPI.get('/v3/auth/tokens', Token.retrieveTokens, Token.validate);
+
+// List Endpoints
+adminAPI.get('/v2.0/tokens/:token/endpoints', Token.retrieveTokens, Endpoints.list);
+clientAPI.get('/v2.0/tokens/:token/endpoints', Token.retrieveTokens, Endpoints.list);
 
 // Token validation from PEP proxies (access-tokens)
 adminAPI.get('/v2.0/access-tokens/:token', Token.validatePEP);
