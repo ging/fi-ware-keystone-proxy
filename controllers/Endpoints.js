@@ -51,7 +51,7 @@ var Endpoints = (function() {
                         var tenantId = getKeystoneTenant(token.tenant);
 
                         var serviceCatalog = JSON.parse(JSON.stringify(endpoints).replace(/\$\(tenant_id\)s/g, tenantId));
-                        res.send(JSON.stringify(serviceCatalog,4,4));
+                        res.send(JSON.stringify({endpoints: serviceCatalog,4,4)});
                     } else {
                         console.log('[ENDPOINT LIST] Auth Token not authorized');
                         res.send(401, 'User unathorized');
