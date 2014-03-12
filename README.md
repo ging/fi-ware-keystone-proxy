@@ -27,7 +27,7 @@ npm install
 </pre>
 
 - Populate de DB
-- 
+
 <pre>
 node ./populate_db.js
 </pre>
