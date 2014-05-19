@@ -36,6 +36,18 @@ adminAPI.use(function(req,res,next) {
     next();
 });
 
+clientAPI.use(function(err, req, res, next) {
+    if(!err) return next(); // you also need this line
+    console.log("********* error!!!", err.stack);
+    res.send(500, "Internal Server Error");
+});
+
+adminAPI.use(function(err, req, res, next) {
+    if(!err) return next(); // you also need this line
+    console.log("********* error!!!", err.stack);
+    res.send(500, "Internal Server Error");
+});
+
 // Token creation
 adminAPI.post('/v2.0/tokens', Token.create);
 clientAPI.post('/v2.0/tokens', Token.create);
