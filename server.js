@@ -61,7 +61,7 @@ clientAPI.all('*', function(req, res) {
 });
 
 adminAPI.all('*', function(req, res) {
-    console.log("///////////////////////Lost request in adminAPI");
+    console.log("///////////////////////Lost request in adminAPI", req.params, req.body);
 
 });
 
