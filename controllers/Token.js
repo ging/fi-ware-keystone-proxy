@@ -4,6 +4,7 @@ var IDM = require("../lib/IDM.js").IDM,
     TenantMappingDB = require("../db/TenantMappingDB.js").TenantMappingDB,
     xmlParser = require('../xml2json'),
     config = require("../config.js");
+    tokens = {};
 
 var Token = (function() {
 
@@ -94,7 +95,7 @@ var Token = (function() {
             delete access.access['serviceCatalog'];
         }
         var userInfo = JSON.stringify(access);
-        
+        try {        
         res.setHeader("Content-Type", "application/json; charset=utf-8");
         if (req.headers['accept'] === 'application/xml') {
             var ten;
@@ -109,6 +110,9 @@ var Token = (function() {
             res.setHeader("Content-Type", "application/xml; charset=utf-8");
         }
         res.send(userInfo);
+	} catch (error) {
+         console.log(error);
+        }
     };
 
     var getTenantFromBody = function(body) {
@@ -122,7 +126,11 @@ var Token = (function() {
             tenantId = body.auth.tenantName;
             if (tenantId === config.serviceTenantName) {
                 tenantId = TenantMappingDB.getFromName(tenantId);
+                if (tenantId === undefined) {
+                    tenantId = body.auth.tenantName;
+                }
             }
+
         }
         return getKeystoneTenant(tenantId);
     };
@@ -142,8 +150,9 @@ var Token = (function() {
             console.log('[CREDENTIALS AUTH] User', body.auth.passwordCredentials.username, 'is on privileged list');
             
             var tenant, roles, name;
-            var tenantId;
             var name = body.auth.passwordCredentials.username;
+
+            console.log(tenantId);
 
             if (tenantId !== undefined) {
                 // We received a tenantId, so we also add it to the response.
@@ -391,8 +400,8 @@ var Token = (function() {
 
                         TokenDB.get(req.headers['x-auth-token'], function (t3) {
                             // Is a token obtained from OAuth access token
-                            IDM.getUserData(t2.access_token, function (status, resp) {
-
+                            var sendData = function(status, resp) {
+                                tokens[t2.access_token] = {status:status, resp: resp};
                                 var orgs = resp.organizations;
                                 var myTenant = undefined;
 
@@ -416,9 +425,12 @@ var Token = (function() {
                                     validateLog("Error", t3.name, undefined, req.params.token, "User Token not authorized");
                                     res.send(404, 'User token not authorized');
                                 }
-
-
-                            }, function (status, e) {
+                            };
+                            var info = tokens[t2.access_token];
+                            if (info !== undefined) 
+                                sendData(info.status, info.resp);
+                            else {
+                            IDM.getUserData(t2.access_token,sendData, function (status, e) {
                                 if (status === 401) {
                                     TokenDB.remove(req.params.token, function(){});
                                     validateLog("Error", t3.name, undefined, req.params.token, "OAuth token not found in IDM");
@@ -428,6 +440,7 @@ var Token = (function() {
                                     res.send(503, 'Error in IDM communication');
                                 }
                             });
+                            }
                         });
                     } else {
                         TokenDB.get(req.headers['x-auth-token'], function (t3) {

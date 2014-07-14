@@ -26,6 +26,12 @@ cd fi-ware-keystone-proxy/
 npm install
 </pre>
 
+- Populate DB
+
+<pre>
+node ./populate_db.js
+</pre>
+
 - Start server
 
 <pre>

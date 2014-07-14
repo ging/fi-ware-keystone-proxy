@@ -21,6 +21,11 @@ var TokenDB = (function() {
             var result = {};
             for (var r in rows) {
                 result[rows[r].token] = rows[r];
+                for (var field_idx in rows[r]) {
+                    if (rows[r][field_idx] === null) {
+                        delete rows[r][field_idx];
+                    }
+                }
             }
             callback(result);
         });
@@ -30,6 +35,11 @@ var TokenDB = (function() {
         var q = 'SELECT * FROM token WHERE token = ' + connection.escape(item);
         connection.query(q, function(err, rows, fields) {
             if (err) callback(undefined);
+            for (var field_idx in rows[0]) {
+                if (rows[0][field_idx] === null) {
+                    delete rows[0][field_idx];
+                }
+            }
             callback(rows[0]);
         });
     };
