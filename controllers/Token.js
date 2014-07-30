@@ -152,8 +152,6 @@ var Token = (function() {
             var tenant, roles, name;
             var name = body.auth.passwordCredentials.username;
 
-            console.log(tenantId);
-
             if (tenantId !== undefined) {
                 // We received a tenantId, so we also add it to the response.
                 tenant = {description: "Tenant", enabled: true, id: tenantId, name: tenantId};
