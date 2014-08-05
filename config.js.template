@@ -8,6 +8,14 @@ config.accountServer = 'account.lab.fi-ware.org';
 config.client_id = '';
 config.client_secret = '';
 
+config.ac = {
+    host: '',
+    path: '/authzforce/domains/[DOMAIN]/pdp',
+    key: '../ssl/key.pem',
+    cert: '../ssl/cert.pem',
+    ca: '../ssl/taz-ca-cert.pem'
+};
+
 config.serviceTenantName = "";
 
 //Mysql db config:

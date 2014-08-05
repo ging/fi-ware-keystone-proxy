@@ -1,4 +1,5 @@
 var IDM = require("../lib/IDM.js").IDM,
+    AC = require("../lib/AC.js").AC,
     TokenDB = require("../db/TokenDB.js").TokenDB,
     UsersDB = require("../db/UsersDB.js").UsersDB,
     TenantMappingDB = require("../db/TenantMappingDB.js").TenantMappingDB,
@@ -494,10 +495,78 @@ var Token = (function() {
             }
         });
     };
+
+    var authorizeRESTPEP = function(req, res) {
+        // Validate token
+        console.log('[VALIDATION] Validate user access-token', req.params.token, 'with auth token ', req.headers['x-auth-token']);
+
+        TokenDB.get(req.headers['x-auth-token'], function (t) {
+
+            if (t) {
+                console.log('[VALIDATION] Authorization OK from PEP proxy ', t.access_token);
+
+                IDM.getUserData(req.params.token, function (status, resp) {
+
+                    console.log('[VALIDATION] User access-token OK');
+
+                    var roles = [];
+                    for (var orgIdx in resp.organizations) {
+                        var org = resp.organizations[orgIdx];
+                        console.log(org.name, org.roles);
+                        for (var roleIdx in org.roles) {
+                            var role = org.roles[roleIdx];
+                            roles.push(role.id);
+                        }
+                    }
+
+                    for (roleIdx in resp.roles) {
+                        role = resp.roles[roleIdx];
+                        roles.push(role.id);
+                    }
+
+                    var resource = req.headers['x-auth-resource'];
+                    var action = req.headers['x-auth-action'];
+
+                    AC.checkRESTPolicy(roles, resource, action, function(authorized) {
+                            if (authorized) {
+                                console.log("[AUTHORIZATION] User is authorized");
+                                var userInfo = JSON.stringify(resp);
+                                if (req.headers['accept'] === 'application/xml') {
+                                    userInfo = xmlParser.json2xml_str(resp);
+                                }
+                                console.log("Response: ", userInfo);
+                                res.send(userInfo);
+                            } else {
+                                console.log("[AUTHORIZATION] User is not authorized");
+                                res.send(404, 'User token not authorized');
+                            }
+                        }, function() {
+                            res.send(503, 'Error in AC communication');
+                        });
+
+                }, function (status, e) {
+                    if (status === 401) {
+                        console.log('[VALIDATION] User token not authorized');
+                        res.send(404, 'User token not authorized');
+                    } else {
+                        console.log('[VALIDATION] Error in IDM communication ', e);
+                        res.send(503, 'Error in IDM communication');
+                    }
+                });
+
+
+            } else {
+                console.log('[VALIDATION] Service unauthorized');
+                res.send(401, 'Service not authorized');
+            }
+        });
+    };
+
     return {
         create: create,
         validate: validate,
         validatePEP: validatePEP,
+        authorizeRESTPEP: authorizeRESTPEP,
         retrieveTokens: retrieveTokens
     }
 })();

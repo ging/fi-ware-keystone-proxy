@@ -71,8 +71,10 @@ var TokenDB = (function() {
     var removeOldTokens = function() {
         list(function (list) {
             for (var l in list) {
-                if ((new Date()).getTime() > list[l].expires.getTime()) {
-                    remove(l, function() {});
+                if (list[l].expires.hasOwnProperty("getTime")) {
+                    if ((new Date()).getTime() > list[l].expires.getTime()) {
+                        remove(l, function() {});
+                    }
                 }
             }
         });
