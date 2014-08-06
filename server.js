@@ -63,9 +63,9 @@ adminAPI.get('/v2.0/tokens/:token/endpoints', Token.retrieveTokens, Endpoints.li
 clientAPI.get('/v2.0/tokens/:token/endpoints', Token.retrieveTokens, Endpoints.list);
 
 // Token validation from PEP proxies (access-tokens)
-adminAPI.get('/v2.0/access-tokens/:token', Token.validatePEP);
-
+adminAPI.post('/v2.0/access-tokens/authXACML/', Token.authorizeXACMLPEP);
 adminAPI.get('/v2.0/access-tokens/authREST/:token', Token.authorizeRESTPEP);
+adminAPI.get('/v2.0/access-tokens/:token', Token.validatePEP);
 
 // List tenants for current user
 clientAPI.get('/v2.0/tenants', Tenant.list);
