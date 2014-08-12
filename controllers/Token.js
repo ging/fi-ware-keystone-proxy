@@ -537,8 +537,8 @@ var Token = (function() {
                                 console.log("Response: ", userInfo);
                                 res.send(userInfo);
                             } else {
-                                console.log("[AUTHORIZATION] User is not authorized");
-                                res.send(404, 'User token not authorized');
+                                console.log("[AUTHORIZATION] User is not authorized for the given action and resource");
+                                res.send(404, 'User token not authorized for the given action and resource.');
                             }
                         }, function() {
                             res.send(503, 'Error in AC communication');
@@ -546,8 +546,8 @@ var Token = (function() {
 
                 }, function (status, e) {
                     if (status === 401) {
-                        console.log('[VALIDATION] User token not authorized');
-                        res.send(404, 'User token not authorized');
+                        console.log('[VALIDATION] User token not authenticated');
+                        res.send(404, 'User token not authenticated');
                     } else {
                         console.log('[VALIDATION] Error in IDM communication ', e);
                         res.send(503, 'Error in IDM communication');
@@ -601,8 +601,9 @@ var Token = (function() {
                                     console.log("Response: ", userInfo);
                                     res.send(userInfo);
                                 } else {
-                                    console.log("[AUTHORIZATION] User is not authorized");
-                                    res.send(404, 'User token not authorized');
+                                    console.log("[AUTHORIZATION] User is not authorized for the given XACML");
+                                    res.send(403, 'User token not authorized for the given resource and action');
+                                    console.log("[AUTHORIZATION] ", roles, xacml);
                                 }
                             }, function() {
                                 res.send(503, 'Error in AC communication');
@@ -610,8 +611,8 @@ var Token = (function() {
 
                     }, function (status, e) {
                         if (status === 401) {
-                            console.log('[VALIDATION] User token not authorized');
-                            res.send(404, 'User token not authorized');
+                            console.log('[VALIDATION] User token not authenticated');
+                            res.send(404, 'User token not authenticated');
                         } else {
                             console.log('[VALIDATION] Error in IDM communication ', e);
                             res.send(503, 'Error in IDM communication');
