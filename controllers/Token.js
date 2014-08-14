@@ -596,7 +596,8 @@ var Token = (function() {
                                     console.log("[AUTHORIZATION] User is authorized");
                                     var userInfo = JSON.stringify(resp);
                                     if (req.headers['accept'] === 'application/xml') {
-                                        userInfo = xmlParser.json2xml_str(resp);
+                                        userInfo = {user: resp};
+                                        userInfo = xmlParser.json2xml_str(userInfo);
                                     }
                                     console.log("Response: ", userInfo);
                                     res.send(userInfo);
