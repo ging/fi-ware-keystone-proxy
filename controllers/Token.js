@@ -198,12 +198,12 @@ var Token = (function() {
 
                             TokenDB.search(access_token, tenantId, function (token) {
                                 if (token) {
-                                    sendAccessResponse(token, ten, resp.nickName, resp.displayName, myTenant.roles, req, res);
+                                    sendAccessResponse(token, ten, resp.actorId, resp.displayName, myTenant.roles, req, res);
                                     return;
                                 } else {
                                     console.log('[TOKEN AUTH] Generating new token for user', body.auth.passwordCredentials.username, 'and tenant ', tenantId, 'token: ', token);
                                     TokenDB.create(access_token, tenantId, body.auth.passwordCredentials.username, function (token) {
-                                        sendAccessResponse(token, ten, resp.nickName, resp.displayName, myTenant.roles, req, res);
+                                        sendAccessResponse(token, ten, resp.actorId, resp.displayName, myTenant.roles, req, res);
                                         return;
                                     });
                                 }
@@ -214,7 +214,7 @@ var Token = (function() {
                         }
                     } else {
                         // If we don't received it we return the access token as a keystone token.
-                        sendAccessResponse(access_token, undefined, resp.nickName, resp.displayName, undefined, req, res);
+                        sendAccessResponse(access_token, undefined, resp.actorId, resp.displayName, undefined, req, res);
                     }
                     
                 }, function (status, e) {
@@ -309,18 +309,18 @@ var Token = (function() {
                             var ten = {description: "Tenant from IDM", enabled: true, id: myTenant.id, name: myTenant.name};
 
                             if (!token) {
-                                TokenDB.create(accToken, tenantId, resp.nickName, function (token) {
-                                    console.log('[TOKEN AUTH] Generating new token for user', resp.nickName, 'and tenant ', tenantId, 'token: ', token);
-                                    sendAccessResponse(token, ten, resp.nickName, resp.displayName, myTenant.roles, req, res);
+                                TokenDB.create(accToken, tenantId, resp.actorId, function (token) {
+                                    console.log('[TOKEN AUTH] Generating new token for user', resp.actorId, 'and tenant ', tenantId, 'token: ', token);
+                                    sendAccessResponse(token, ten, resp.actorId, resp.displayName, myTenant.roles, req, res);
                                     return;
                                 });
                             } else {
-                                sendAccessResponse(token, ten, resp.nickName, resp.displayName, myTenant.roles, req, res);
+                                sendAccessResponse(token, ten, resp.actorId, resp.displayName, myTenant.roles, req, res);
                                 return;
                             }
                         });
                     } else {
-                        console.log('[TOKEN AUTH] Authentication error for ', resp.nickName, 'and tenant ', tenantId);
+                        console.log('[TOKEN AUTH] Authentication error for ', resp.actorId, 'and tenant ', tenantId);
                         res.send(401, 'User unathorized for this tenant');
                     }
 
@@ -416,8 +416,8 @@ var Token = (function() {
                                 if (myTenant) {
                                     //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
                                     var ten = {description: "Tenant from IDM", enabled: true, id: myTenant.id, name: myTenant.name};
-                                    validateLog("Success", t3.name, resp.nickName, req.params.token, "");
-                                    sendAccessResponse(t2, ten, resp.nickName, resp.displayName, myTenant.roles, req, res, true);
+                                    validateLog("Success", t3.name, resp.actorId, req.params.token, "");
+                                    sendAccessResponse(t2, ten, resp.actorId, resp.displayName, myTenant.roles, req, res, true);
                                     return;
                                     
                                 } else {
