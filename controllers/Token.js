@@ -39,7 +39,7 @@ var Token = (function() {
         return require('crypto').randomBytes(16).toString('hex');
     };
 
-    var generateAccessResponse = function (token, tenant, user_id, user_name, roles) {
+    var generateAccessResponse = function (token, tenant, user_id, user_name, roles, actorId) {
         if (tenant !== undefined) {
             tenant.id = getKeystoneTenant(tenant.id);
         }
@@ -57,13 +57,14 @@ var Token = (function() {
                     "roles_links": [],
                     "id": user_id + '',
                     "roles": roles,
-                    "name": user_name
+                    "name": user_name,
+                    "actorId": actorId
                 }
             }
         };
     };
 
-    var generateAccessResponseForXML = function (token, tenant, user_id, user_name, roles) {
+    var generateAccessResponseForXML = function (token, tenant, user_id, user_name, roles, actorId) {
         var newRoles = [];
         for (var r in roles) {
             var nr = {"_name": roles[r].name, "_id": roles[r].id};
@@ -84,14 +85,15 @@ var Token = (function() {
                     "roles_links": [],
                     "_id": user_id,
                     "roles": newRoles,
-                    "_name": user_name
+                    "_name": user_name,
+                    "_actorId": actorId
                 }
             }
         };
     };
 
-    var sendAccessResponse = function(token, tenant, user_id, user_name, roles, req, res, deleteCatalog) {
-        var access = generateAccessResponse(token, tenant, user_id, user_name, roles);
+    var sendAccessResponse = function(token, tenant, user_id, user_name, roles, req, res, deleteCatalog, actorId) {
+        var access = generateAccessResponse(token, tenant, user_id, user_name, roles, actorId);
         if (deleteCatalog === true) {
             delete access.access['serviceCatalog'];
         }
@@ -103,7 +105,7 @@ var Token = (function() {
             if (tenant !== undefined) {
                 ten = {"_enabled": true, "_id": tenant.id, "_name": tenant.name};
             }
-            var resp = generateAccessResponseForXML(token, ten, user_id, user_name, roles);
+            var resp = generateAccessResponseForXML(token, ten, user_id, user_name, roles, actorId);
             if (deleteCatalog === true) {
                 delete resp.access['serviceCatalog'];
             }
@@ -198,12 +200,12 @@ var Token = (function() {
 
                             TokenDB.search(access_token, tenantId, function (token) {
                                 if (token) {
-                                    sendAccessResponse(token, ten, resp.actorId, resp.displayName, myTenant.roles, req, res);
+                                    sendAccessResponse(token, ten, resp.nickName, resp.displayName, myTenant.roles, req, res, undefined, resp.actorId);
                                     return;
                                 } else {
                                     console.log('[TOKEN AUTH] Generating new token for user', body.auth.passwordCredentials.username, 'and tenant ', tenantId, 'token: ', token);
                                     TokenDB.create(access_token, tenantId, body.auth.passwordCredentials.username, function (token) {
-                                        sendAccessResponse(token, ten, resp.actorId, resp.displayName, myTenant.roles, req, res);
+                                        sendAccessResponse(token, ten, resp.nickName, resp.displayName, myTenant.roles, req, res, undefined, resp.actorId);
                                         return;
                                     });
                                 }
@@ -214,7 +216,7 @@ var Token = (function() {
                         }
                     } else {
                         // If we don't received it we return the access token as a keystone token.
-                        sendAccessResponse(access_token, undefined, resp.actorId, resp.displayName, undefined, req, res);
+                        sendAccessResponse(access_token, undefined, resp.nickName, resp.displayName, undefined, req, res, undefined, resp.actorId);
                     }
                     
                 }, function (status, e) {
@@ -309,18 +311,18 @@ var Token = (function() {
                             var ten = {description: "Tenant from IDM", enabled: true, id: myTenant.id, name: myTenant.name};
 
                             if (!token) {
-                                TokenDB.create(accToken, tenantId, resp.actorId, function (token) {
-                                    console.log('[TOKEN AUTH] Generating new token for user', resp.actorId, 'and tenant ', tenantId, 'token: ', token);
-                                    sendAccessResponse(token, ten, resp.actorId, resp.displayName, myTenant.roles, req, res);
+                                TokenDB.create(accToken, tenantId, resp.nickName, function (token) {
+                                    console.log('[TOKEN AUTH] Generating new token for user', resp.nickName, 'and tenant ', tenantId, 'token: ', token);
+                                    sendAccessResponse(token, ten, resp.nickName, resp.displayName, myTenant.roles, req, res, undefined, resp.actorId);
                                     return;
                                 });
                             } else {
-                                sendAccessResponse(token, ten, resp.actorId, resp.displayName, myTenant.roles, req, res);
+                                sendAccessResponse(token, ten, resp.nickName, resp.displayName, myTenant.roles, req, res, undefined, resp.actorId);
                                 return;
                             }
                         });
                     } else {
-                        console.log('[TOKEN AUTH] Authentication error for ', resp.actorId, 'and tenant ', tenantId);
+                        console.log('[TOKEN AUTH] Authentication error for ', resp.nickName, 'and tenant ', tenantId);
                         res.send(401, 'User unathorized for this tenant');
                     }
 
@@ -416,8 +418,8 @@ var Token = (function() {
                                 if (myTenant) {
                                     //var tid = "6571e3422ad84f7d828ce2f30373b3d4";
                                     var ten = {description: "Tenant from IDM", enabled: true, id: myTenant.id, name: myTenant.name};
-                                    validateLog("Success", t3.name, resp.actorId, req.params.token, "");
-                                    sendAccessResponse(t2, ten, resp.actorId, resp.displayName, myTenant.roles, req, res, true);
+                                    validateLog("Success", t3.name, resp.nickName, req.params.token, "");
+                                    sendAccessResponse(t2, ten, resp.nickName, resp.displayName, myTenant.roles, req, res, true, undefined, resp.actorId);
                                     return;
                                     
                                 } else {
