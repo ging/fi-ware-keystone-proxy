@@ -53,9 +53,9 @@ var Token = (function() {
                 }, 
                 "serviceCatalog": ((tenant!==undefined)?getCatalogue(tenant.id):undefined),
                 "user": {
-                    "username": user_id,
+                    "username": user_id + '',
                     "roles_links": [],
-                    "id": user_id,
+                    "id": user_id + '',
                     "roles": roles,
                     "name": user_name
                 }
