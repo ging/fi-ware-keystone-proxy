@@ -74,6 +74,9 @@ adminAPI.get('/v2.0/tenants', Tenant.list);
 adminAPI.get('/', Index.get);
 clientAPI.get('/', Index.get);
 
+adminAPI.get('/v2.0', Index.v2);
+clientAPI.get('/v2.0', Index.v2);
+
 clientAPI.all('*', function(req, res) {
    console.log("////////////////////////Lost request in clientAPI", req.params, req.body);
 
